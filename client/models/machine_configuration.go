@@ -48,6 +48,9 @@ type MachineConfiguration struct {
 	// Maximum: 32
 	// Minimum: 1
 	VcpuCount *int64 `json:"vcpu_count"`
+
+	// shared memory
+	SharedMemory *SharedMemoryConfiguration `json:"shared_memory,omitempty"`
 }
 
 // Validate validates this machine configuration
@@ -63,6 +66,10 @@ func (m *MachineConfiguration) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateVcpuCount(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSharedMemory(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -109,6 +116,24 @@ func (m *MachineConfiguration) validateVcpuCount(formats strfmt.Registry) error 
 
 	if err := validate.MaximumInt("vcpu_count", "body", int64(*m.VcpuCount), 32, false); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *MachineConfiguration) validateSharedMemory(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.SharedMemory) { // not required
+		return nil
+	}
+
+	if m.SharedMemory != nil {
+		if err := m.SharedMemory.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("shared_memory")
+			}
+			return err
+		}
 	}
 
 	return nil

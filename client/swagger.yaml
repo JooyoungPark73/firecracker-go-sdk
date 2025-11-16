@@ -1026,6 +1026,8 @@ definitions:
         minimum: 1
         maximum: 32
         description: Number of vCPUs (either 1 or an even number)
+      shared_memory:
+        $ref: "#/definitions/SharedMemoryConfiguration"
 
   MemoryBackend:
     type: object
@@ -1302,3 +1304,23 @@ definitions:
       vsock_id:
         type: string
         description: This parameter has been deprecated since v1.0.0.
+
+  SharedMemoryConfiguration:
+    type: object
+    description:
+      Defines a shared memory region for host-guest communication.
+    required:
+      - path
+      - size_mib
+    properties:
+      path:
+        type: string
+        description: Path to the shared memory file on the host.
+      size_mib:
+        type: integer
+        minimum: 1
+        description: Size of shared memory in MiB.
+      guest_addr:
+        type: integer
+        format: int64
+        description: Optional guest physical address for the shared memory region. If not specified, it will be auto-assigned.
