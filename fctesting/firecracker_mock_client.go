@@ -43,6 +43,7 @@ type MockClient struct {
 	PutGuestBootSourceFn             func(params *ops.PutGuestBootSourceParams) (*ops.PutGuestBootSourceNoContent, error)
 	PutGuestDriveByIDFn              func(params *ops.PutGuestDriveByIDParams) (*ops.PutGuestDriveByIDNoContent, error)
 	PutGuestNetworkInterfaceByIDFn   func(params *ops.PutGuestNetworkInterfaceByIDParams) (*ops.PutGuestNetworkInterfaceByIDNoContent, error)
+	PutGuestPmemByIDFn               func(params *ops.PutGuestPmemByIDParams) (*ops.PutGuestPmemByIDNoContent, error)
 	PutGuestVsockFn                  func(params *ops.PutGuestVsockParams) (*ops.PutGuestVsockNoContent, error)
 	PutLoggerFn                      func(params *ops.PutLoggerParams) (*ops.PutLoggerNoContent, error)
 	PutMachineConfigurationFn        func(params *ops.PutMachineConfigurationParams) (*ops.PutMachineConfigurationNoContent, error)
@@ -230,6 +231,14 @@ func (c *MockClient) PutGuestDriveByID(params *ops.PutGuestDriveByIDParams) (*op
 func (c *MockClient) PutGuestNetworkInterfaceByID(params *ops.PutGuestNetworkInterfaceByIDParams) (*ops.PutGuestNetworkInterfaceByIDNoContent, error) {
 	if c.PutGuestNetworkInterfaceByIDFn != nil {
 		return c.PutGuestNetworkInterfaceByIDFn(params)
+	}
+
+	return nil, nil
+}
+
+func (c *MockClient) PutGuestPmemByID(params *ops.PutGuestPmemByIDParams) (*ops.PutGuestPmemByIDNoContent, error) {
+	if c.PutGuestPmemByIDFn != nil {
+		return c.PutGuestPmemByIDFn(params)
 	}
 
 	return nil, nil

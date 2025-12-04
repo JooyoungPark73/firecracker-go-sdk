@@ -57,6 +57,9 @@ type FullVMConfiguration struct {
 	// Configurations for all net devices.
 	NetworkInterfaces []*NetworkInterface `json:"network-interfaces"`
 
+	// Configurations for all pmem devices.
+	Pmem []*Pmem `json:"pmem"`
+
 	// vsock
 	Vsock *Vsock `json:"vsock,omitempty"`
 }
@@ -94,6 +97,10 @@ func (m *FullVMConfiguration) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateNetworkInterfaces(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePmem(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -305,6 +312,36 @@ func (m *FullVMConfiguration) validateNetworkInterfaces(formats strfmt.Registry)
 	return nil
 }
 
+func (m *FullVMConfiguration) validatePmem(formats strfmt.Registry) error {
+	if swag.IsZero(m.Pmem) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Pmem); i++ {
+		if swag.IsZero(m.Pmem[i]) { // not required
+			continue
+		}
+
+		if m.Pmem[i] != nil {
+			if err := m.Pmem[i].Validate(formats); err != nil {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
+					return ve.ValidateName("pmem" + "." + strconv.Itoa(i))
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
+					return ce.ValidateName("pmem" + "." + strconv.Itoa(i))
+				}
+
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *FullVMConfiguration) validateVsock(formats strfmt.Registry) error {
 	if swag.IsZero(m.Vsock) { // not required
 		return nil
@@ -361,6 +398,10 @@ func (m *FullVMConfiguration) ContextValidate(ctx context.Context, formats strfm
 	}
 
 	if err := m.contextValidateNetworkInterfaces(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePmem(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -571,6 +612,35 @@ func (m *FullVMConfiguration) contextValidateNetworkInterfaces(ctx context.Conte
 				ce := new(errors.CompositeError)
 				if stderrors.As(err, &ce) {
 					return ce.ValidateName("network-interfaces" + "." + strconv.Itoa(i))
+				}
+
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *FullVMConfiguration) contextValidatePmem(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Pmem); i++ {
+
+		if m.Pmem[i] != nil {
+
+			if swag.IsZero(m.Pmem[i]) { // not required
+				return nil
+			}
+
+			if err := m.Pmem[i].ContextValidate(ctx, formats); err != nil {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
+					return ve.ValidateName("pmem" + "." + strconv.Itoa(i))
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
+					return ce.ValidateName("pmem" + "." + strconv.Itoa(i))
 				}
 
 				return err

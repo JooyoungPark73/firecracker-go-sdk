@@ -722,6 +722,36 @@ func (a *Client) PutGuestNetworkInterfaceByID(params *PutGuestNetworkInterfaceBy
 }
 
 /*
+PutGuestPmemByID creates or updates a pmem device pre boot only
+
+Creates new pmem device with ID specified by id parameter. If a pmem device with the specified ID already exists, updates its state based on new input. Will fail if update is not possible.
+*/
+func (a *Client) PutGuestPmemByID(params *PutGuestPmemByIDParams) (*PutGuestPmemByIDNoContent, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPutGuestPmemByIDParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "putGuestPmemByID",
+		Method:             "PUT",
+		PathPattern:        "/pmem/{id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PutGuestPmemByIDReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PutGuestPmemByIDNoContent), nil
+
+}
+
+/*
 PutGuestVsock creates updates a vsock device pre boot only
 
 The first call creates the device with the configuration specified in body. Subsequent calls will update the device configuration. May fail if update is not possible.
@@ -926,6 +956,7 @@ type ClientIface interface {
 	PutGuestBootSource(params *PutGuestBootSourceParams) (*PutGuestBootSourceNoContent, error)
 	PutGuestDriveByID(params *PutGuestDriveByIDParams) (*PutGuestDriveByIDNoContent, error)
 	PutGuestNetworkInterfaceByID(params *PutGuestNetworkInterfaceByIDParams) (*PutGuestNetworkInterfaceByIDNoContent, error)
+	PutGuestPmemByID(params *PutGuestPmemByIDParams) (*PutGuestPmemByIDNoContent, error)
 	PutGuestVsock(params *PutGuestVsockParams) (*PutGuestVsockNoContent, error)
 	PutLogger(params *PutLoggerParams) (*PutLoggerNoContent, error)
 	PutMachineConfiguration(params *PutMachineConfigurationParams) (*PutMachineConfigurationNoContent, error)

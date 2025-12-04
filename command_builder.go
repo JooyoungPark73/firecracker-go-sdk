@@ -34,6 +34,7 @@ type VMCommandBuilder struct {
 	bin        string
 	args       []string
 	socketPath string
+	enablePCI  bool
 	stdin      io.Reader
 	stdout     io.Writer
 	stderr     io.Writer
@@ -92,6 +93,18 @@ func (b VMCommandBuilder) WithSocketPath(path string) VMCommandBuilder {
 	return b
 }
 
+// EnablePCI returns whether the --enable-pci flag will be passed
+func (b VMCommandBuilder) EnablePCI() bool {
+	return b.enablePCI
+}
+
+// WithEnablePCI specifies whether to pass the --enable-pci flag
+// when creating the firecracker exec.Command
+func (b VMCommandBuilder) WithEnablePCI(enable bool) VMCommandBuilder {
+	b.enablePCI = enable
+	return b
+}
+
 // Stdout will return the stdout that will be used when creating
 // the firecracker exec.Command
 func (b VMCommandBuilder) Stdout() io.Writer {
@@ -137,6 +150,9 @@ func (b VMCommandBuilder) Build(ctx context.Context) *exec.Cmd {
 	args := []string{}
 	if socketPath := b.SocketPath(); socketPath != nil {
 		args = append(args, socketPath...)
+	}
+	if b.EnablePCI() {
+		args = append(args, "--enable-pci")
 	}
 	if v := b.Args(); v != nil {
 		args = append(args, v...)

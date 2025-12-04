@@ -169,6 +169,9 @@ type Config struct {
 
 	// Configuration for snapshot loading
 	Snapshot SnapshotConfig
+
+	// EnablePCI specifies whether to enable PCI device support
+	EnablePCI bool
 }
 
 func (cfg *Config) hasSnapshot() bool {
@@ -354,6 +357,7 @@ func seccompArgs(cfg *Config) []string {
 func configureBuilder(builder VMCommandBuilder, cfg Config) VMCommandBuilder {
 	return builder.
 		WithSocketPath(cfg.SocketPath).
+		WithEnablePCI(cfg.EnablePCI).
 		AddArgs("--id", cfg.VMID).
 		AddArgs(seccompArgs(&cfg)...)
 }
