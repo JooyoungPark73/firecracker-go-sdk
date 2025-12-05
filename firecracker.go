@@ -245,6 +245,26 @@ func (f *Client) PutGuestVsock(ctx context.Context, vsock *models.Vsock, opts ..
 	return f.client.Operations.PutGuestVsock(params)
 }
 
+// PutGuestPmemByIDOpt is a functional option to be used for the
+// PutGuestPmemByID API in setting any additional optional fields.
+type PutGuestPmemByIDOpt func(*ops.PutGuestPmemByIDParams)
+
+// PutGuestPmemByID is a wrapper for the swagger generated client to make
+// calling of the API easier.
+func (f *Client) PutGuestPmemByID(ctx context.Context, pmemID string, pmem *models.Pmem, opts ...PutGuestPmemByIDOpt) (*ops.PutGuestPmemByIDNoContent, error) {
+	timeout, cancel := context.WithTimeout(ctx, time.Duration(f.firecrackerRequestTimeout)*time.Millisecond)
+	defer cancel()
+
+	params := ops.NewPutGuestPmemByIDParamsWithContext(timeout)
+	params.SetID(pmemID)
+	params.SetBody(pmem)
+	for _, opt := range opts {
+		opt(params)
+	}
+
+	return f.client.Operations.PutGuestPmemByID(params)
+}
+
 // PatchVMOpt is a functional option to be used for the
 // PatchVM API in setting any additional optional fields.
 type PatchVMOpt func(*ops.PatchVMParams)

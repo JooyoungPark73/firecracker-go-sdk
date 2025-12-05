@@ -27,6 +27,7 @@ const (
 	CreateMachineHandlerName           = "fcinit.CreateMachine"
 	CreateBootSourceHandlerName        = "fcinit.CreateBootSource"
 	AttachDrivesHandlerName            = "fcinit.AttachDrives"
+	AttachPmemsHandlerName             = "fcinit.AttachPmems"
 	CreateNetworkInterfacesHandlerName = "fcinit.CreateNetworkInterfaces"
 	AddVsocksHandlerName               = "fcinit.AddVsocks"
 	SetMetadataHandlerName             = "fcinit.SetMetadata"
@@ -252,6 +253,15 @@ var SetupKernelArgsHandler = Handler{
 	},
 }
 
+// AttachPmemsHandler is a named handler that attaches pmem devices to the
+// firecracker process.
+var AttachPmemsHandler = Handler{
+	Name: AttachPmemsHandlerName,
+	Fn: func(ctx context.Context, m *Machine) error {
+		return m.attachPmems(ctx, m.Cfg.PmemDevices...)
+	},
+}
+
 // AddVsocksHandler is a named handler that adds vsocks to the firecracker
 // process.
 var AddVsocksHandler = Handler{
@@ -310,6 +320,7 @@ var defaultFcInitHandlerList = HandlerList{}.Append(
 	CreateMachineHandler,
 	CreateBootSourceHandler,
 	AttachDrivesHandler,
+	AttachPmemsHandler,
 	CreateNetworkInterfacesHandler,
 	AddVsocksHandler,
 	ConfigMmdsHandler,
@@ -324,6 +335,7 @@ var loadSnapshotRemoveHandlerList = []Handler{
 	CreateMachineHandler,
 	CreateBootSourceHandler,
 	AttachDrivesHandler,
+	AttachPmemsHandler,
 	CreateNetworkInterfacesHandler,
 	ConfigMmdsHandler,
 }

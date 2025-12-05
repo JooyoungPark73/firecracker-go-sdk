@@ -118,6 +118,10 @@ type Config struct {
 	// microVM.
 	Drives []models.Drive
 
+	// PmemDevices specifies pmem devices that should be made available to the
+	// microVM.
+	PmemDevices []models.Pmem
+
 	// NetworkInterfaces specifies the tap devices that should be made available
 	// to the microVM.
 	NetworkInterfaces NetworkInterfaces
@@ -552,6 +556,18 @@ func (m *Machine) attachDrives(ctx context.Context, drives ...models.Drive) erro
 	return nil
 }
 
+func (m *Machine) attachPmems(ctx context.Context, pmems ...models.Pmem) error {
+	for _, dev := range pmems {
+		if err := m.attachPmem(ctx, dev); err != nil {
+			m.logger.Errorf("While attaching pmem %s, got error %s", StringValue(dev.PathOnHost), err)
+			return err
+		}
+		m.logger.Debugf("attachPmem returned for %s", StringValue(dev.PathOnHost))
+	}
+
+	return nil
+}
+
 func (m *Machine) defaultNetNSPath() string {
 	return filepath.Join(defaultNetNSDir, m.Cfg.VMID)
 }
@@ -921,6 +937,20 @@ func (m *Machine) addVsock(ctx context.Context, dev VsockDevice) error {
 	}
 	m.logger.Debugf("Attach vsock %s successful: %s", dev.Path, resp.Error())
 	return nil
+}
+
+// attachPmem attaches a pmem device
+func (m *Machine) attachPmem(ctx context.Context, dev models.Pmem) error {
+	hostPath := StringValue(dev.PathOnHost)
+	pmemID := StringValue(dev.ID)
+	m.logger.Infof("Attaching pmem %s, id %s, root %t, raw_memory %t.", hostPath, pmemID, dev.RootDevice, dev.RawMemory)
+	respNoContent, err := m.client.PutGuestPmemByID(ctx, pmemID, &dev)
+	if err == nil {
+		m.logger.Printf("Attached pmem %s: %s", hostPath, respNoContent.Error())
+	} else {
+		m.logger.Errorf("Attach pmem failed: %s: %s", hostPath, err)
+	}
+	return err
 }
 
 func (m *Machine) startInstance(ctx context.Context) error {
