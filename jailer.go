@@ -379,10 +379,10 @@ func jail(ctx context.Context, m *Machine, cfg *Config) error {
 	}
 
 	fcArgs := seccompArgs(cfg)
-	fcArgs = append(fcArgs, "--api-sock", machineSocketPath)
 	if cfg.EnablePCI {
 		fcArgs = append(fcArgs, "--enable-pci")
 	}
+	fcArgs = append(fcArgs, "--api-sock", machineSocketPath)
 
 	builder := NewJailerCommandBuilder().
 		WithID(cfg.JailerCfg.ID).
