@@ -1043,14 +1043,12 @@ definitions:
     type: object
     description:
       Describes the configuration option for the logging capability.
-    required:
-      - log_path
     properties:
       level:
         type: string
         description: Set the level. The possible values are case-insensitive.
-        enum: [Error, Warning, Info, Debug]
-        default: Warning
+        enum: [Error, Warning, Info, Debug, Trace, Off]
+        default: Info
       log_path:
         type: string
         description: Path to the named pipe or file for the human readable log output.
@@ -1062,6 +1060,10 @@ definitions:
         type: boolean
         description: Whether or not to include the file path and line number of the log's origin.
         default: false
+      module:
+        type: string
+        description: The module path to filter log messages by.
+        example: api_server::request
 
   MachineConfiguration:
     type: object
@@ -1369,4 +1371,6 @@ definitions:
         description: Path to UNIX domain socket, used to proxy vsock connections.
       vsock_id:
         type: string
-        description: This parameter has been deprecated since v1.0.0.
+        description:
+          This parameter has been deprecated and it will be removed in future
+          Firecracker release.

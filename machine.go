@@ -734,7 +734,7 @@ func (m *Machine) setupLogging(ctx context.Context) error {
 	}
 
 	l := models.Logger{
-		LogPath:       String(path),
+		LogPath:       *String(path),
 		Level:         level,
 		ShowLevel:     Bool(true),
 		ShowLogOrigin: Bool(false),
