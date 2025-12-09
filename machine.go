@@ -708,7 +708,7 @@ func (m *Machine) stopVMM() error {
 // createFifo sets up a FIFOs
 func createFifo(path string) error {
 	log.Debugf("Creating FIFO %s", path)
-	if err := syscall.Mkfifo(path, 0700); err != nil {
+	if err := syscall.Mkfifo(path, 0744); err != nil {
 		return fmt.Errorf("Failed to create log fifo: %v", err)
 	}
 	return nil
