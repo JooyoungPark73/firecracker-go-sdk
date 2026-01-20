@@ -925,6 +925,36 @@ func (a *Client) PutMmdsConfig(params *PutMmdsConfigParams) (*PutMmdsConfigNoCon
 
 }
 
+/*
+PutNexusByID creates or updates a nexus shared memory device pre boot only
+
+Creates new nexus device with ID specified by id parameter. If a nexus device with the specified ID already exists, updates its state based on new input. Will fail if update is not possible.
+*/
+func (a *Client) PutNexusByID(params *PutNexusByIDParams) (*PutNexusByIDNoContent, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPutNexusByIDParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "putNexusByID",
+		Method:             "PUT",
+		PathPattern:        "/nexus/{id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PutNexusByIDReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PutNexusByIDNoContent), nil
+
+}
+
 // SetTransport changes the transport on the client
 func (a *Client) SetTransport(transport runtime.ClientTransport) {
 	a.transport = transport
@@ -963,4 +993,5 @@ type ClientIface interface {
 	PutMetrics(params *PutMetricsParams) (*PutMetricsNoContent, error)
 	PutMmds(params *PutMmdsParams) (*PutMmdsNoContent, error)
 	PutMmdsConfig(params *PutMmdsConfigParams) (*PutMmdsConfigNoContent, error)
+	PutNexusByID(params *PutNexusByIDParams) (*PutNexusByIDNoContent, error)
 }

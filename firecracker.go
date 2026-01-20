@@ -265,6 +265,26 @@ func (f *Client) PutGuestPmemByID(ctx context.Context, pmemID string, pmem *mode
 	return f.client.Operations.PutGuestPmemByID(params)
 }
 
+// PutNexusByIDOpt is a functional option to be used for the
+// PutNexusByID API in setting any additional optional fields.
+type PutNexusByIDOpt func(*ops.PutNexusByIDParams)
+
+// PutNexusByID is a wrapper for the swagger generated client to make
+// calling of the API easier.
+func (f *Client) PutNexusByID(ctx context.Context, nexusID string, nexus *models.Nexus, opts ...PutNexusByIDOpt) (*ops.PutNexusByIDNoContent, error) {
+	timeout, cancel := context.WithTimeout(ctx, time.Duration(f.firecrackerRequestTimeout)*time.Millisecond)
+	defer cancel()
+
+	params := ops.NewPutNexusByIDParamsWithContext(timeout)
+	params.SetID(nexusID)
+	params.SetBody(nexus)
+	for _, opt := range opts {
+		opt(params)
+	}
+
+	return f.client.Operations.PutNexusByID(params)
+}
+
 // PatchVMOpt is a functional option to be used for the
 // PatchVM API in setting any additional optional fields.
 type PatchVMOpt func(*ops.PatchVMParams)

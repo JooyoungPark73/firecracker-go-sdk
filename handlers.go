@@ -28,6 +28,7 @@ const (
 	CreateBootSourceHandlerName        = "fcinit.CreateBootSource"
 	AttachDrivesHandlerName            = "fcinit.AttachDrives"
 	AttachPmemsHandlerName             = "fcinit.AttachPmems"
+	AttachNexusesHandlerName           = "fcinit.AttachNexuses"
 	CreateNetworkInterfacesHandlerName = "fcinit.CreateNetworkInterfaces"
 	AddVsocksHandlerName               = "fcinit.AddVsocks"
 	SetMetadataHandlerName             = "fcinit.SetMetadata"
@@ -262,6 +263,15 @@ var AttachPmemsHandler = Handler{
 	},
 }
 
+// AttachNexusesHandler is a named handler that attaches nexus shared memory
+// devices to the firecracker process.
+var AttachNexusesHandler = Handler{
+	Name: AttachNexusesHandlerName,
+	Fn: func(ctx context.Context, m *Machine) error {
+		return m.attachNexuses(ctx, m.Cfg.NexusDevices...)
+	},
+}
+
 // AddVsocksHandler is a named handler that adds vsocks to the firecracker
 // process.
 var AddVsocksHandler = Handler{
@@ -321,6 +331,7 @@ var defaultFcInitHandlerList = HandlerList{}.Append(
 	CreateBootSourceHandler,
 	AttachDrivesHandler,
 	AttachPmemsHandler,
+	AttachNexusesHandler,
 	CreateNetworkInterfacesHandler,
 	AddVsocksHandler,
 	ConfigMmdsHandler,
@@ -336,6 +347,7 @@ var loadSnapshotRemoveHandlerList = []Handler{
 	CreateBootSourceHandler,
 	AttachDrivesHandler,
 	AttachPmemsHandler,
+	AttachNexusesHandler,
 	CreateNetworkInterfacesHandler,
 	ConfigMmdsHandler,
 }

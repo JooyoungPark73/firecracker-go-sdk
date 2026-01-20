@@ -122,6 +122,10 @@ type Config struct {
 	// microVM.
 	PmemDevices []models.Pmem
 
+	// NexusDevices specifies nexus shared memory devices that should be made
+	// available to the microVM.
+	NexusDevices []models.Nexus
+
 	// NetworkInterfaces specifies the tap devices that should be made available
 	// to the microVM.
 	NetworkInterfaces NetworkInterfaces
@@ -568,6 +572,18 @@ func (m *Machine) attachPmems(ctx context.Context, pmems ...models.Pmem) error {
 	return nil
 }
 
+func (m *Machine) attachNexuses(ctx context.Context, nexuses ...models.Nexus) error {
+	for _, dev := range nexuses {
+		if err := m.attachNexus(ctx, dev); err != nil {
+			m.logger.Errorf("While attaching nexus %s, got error %s", StringValue(dev.ID), err)
+			return err
+		}
+		m.logger.Debugf("attachNexus returned for %s", StringValue(dev.ID))
+	}
+
+	return nil
+}
+
 func (m *Machine) defaultNetNSPath() string {
 	return filepath.Join(defaultNetNSDir, m.Cfg.VMID)
 }
@@ -953,6 +969,20 @@ func (m *Machine) attachPmem(ctx context.Context, dev models.Pmem) error {
 	return err
 }
 
+func (m *Machine) attachNexus(ctx context.Context, dev models.Nexus) error {
+	nexusID := StringValue(dev.ID)
+	shmemPath := StringValue(dev.ShmemPath)
+	sizeMib := Int64Value(dev.SizeMib)
+	m.logger.Infof("Attaching nexus %s, shmem_path %s, size %d MiB.", nexusID, shmemPath, sizeMib)
+	respNoContent, err := m.client.PutNexusByID(ctx, nexusID, &dev)
+	if err == nil {
+		m.logger.Printf("Attached nexus %s: %s", nexusID, respNoContent.Error())
+	} else {
+		m.logger.Errorf("Attach nexus failed: %s: %s", nexusID, err)
+	}
+	return err
+}
+
 func (m *Machine) startInstance(ctx context.Context) error {
 	if m.Cfg.hasSnapshot() {
 		return nil
@@ -1307,5 +1337,23 @@ func (m *Machine) UpdateBalloonStats(ctx context.Context, statsPollingIntervals 
 	}
 
 	m.logger.Debug("UpdateBalloonStats successful")
+	return nil
+}
+
+// CreateNexusDevice creates a nexus shared memory device if one does not exist.
+func (m *Machine) CreateNexusDevice(ctx context.Context, id, shmemPath string, sizeMib int64, opts ...PutNexusByIDOpt) error {
+	nexus := models.Nexus{
+		ID:        &id,
+		ShmemPath: &shmemPath,
+		SizeMib:   &sizeMib,
+	}
+	_, err := m.client.PutNexusByID(ctx, id, &nexus, opts...)
+
+	if err != nil {
+		m.logger.Errorf("Create nexus device failed: %s", err)
+		return err
+	}
+
+	m.logger.Debug("Created nexus device successful")
 	return nil
 }

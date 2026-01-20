@@ -50,6 +50,7 @@ type MockClient struct {
 	PutMetricsFn                     func(params *ops.PutMetricsParams) (*ops.PutMetricsNoContent, error)
 	PutMmdsFn                        func(params *ops.PutMmdsParams) (*ops.PutMmdsNoContent, error)
 	PutMmdsConfigFn                  func(params *ops.PutMmdsConfigParams) (*ops.PutMmdsConfigNoContent, error)
+	PutNexusByIDFn                   func(params *ops.PutNexusByIDParams) (*ops.PutNexusByIDNoContent, error)
 }
 
 func (c *MockClient) CreateSnapshot(params *ops.CreateSnapshotParams) (*ops.CreateSnapshotNoContent, error) {
@@ -287,6 +288,14 @@ func (c *MockClient) PutMmds(params *ops.PutMmdsParams) (*ops.PutMmdsNoContent, 
 func (c *MockClient) PutMmdsConfig(params *ops.PutMmdsConfigParams) (*ops.PutMmdsConfigNoContent, error) {
 	if c.PutMmdsConfigFn != nil {
 		return c.PutMmdsConfigFn(params)
+	}
+
+	return nil, nil
+}
+
+func (c *MockClient) PutNexusByID(params *ops.PutNexusByIDParams) (*ops.PutNexusByIDNoContent, error) {
+	if c.PutNexusByIDFn != nil {
+		return c.PutNexusByIDFn(params)
 	}
 
 	return nil, nil

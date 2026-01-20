@@ -314,6 +314,38 @@ paths:
           schema:
             $ref: "#/definitions/Error"
 
+  /nexus/{id}:
+    put:
+      summary: Creates or updates a nexus shared memory device. Pre-boot only.
+      description:
+        Creates new nexus device with ID specified by id parameter.
+        If a nexus device with the specified ID already exists, updates its state based on new input.
+        Will fail if update is not possible.
+      operationId: putNexusByID
+      parameters:
+        - name: id
+          in: path
+          description: The id of the nexus device
+          required: true
+          type: string
+        - name: body
+          in: body
+          description: Nexus device properties
+          required: true
+          schema:
+            $ref: "#/definitions/Nexus"
+      responses:
+        204:
+          description: Nexus device is created/updated
+        400:
+          description: Nexus device cannot be created/updated due to bad input
+          schema:
+            $ref: "#/definitions/Error"
+        default:
+          description: Internal server error.
+          schema:
+            $ref: "#/definitions/Error"
+
   /logger:
     put:
       summary: Initializes the logger by specifying a named pipe or a file for the logs output.
@@ -954,6 +986,27 @@ definitions:
           host-guest communication. The device will use a fixed physical address (1TB) to ensure
           consistent addressing across snapshot/restore operations.
 
+  Nexus:
+    type: object
+    required:
+      - id
+      - shmem_path
+      - size_mib
+    properties:
+      id:
+        type: string
+        description:
+          Unique identifier for this nexus device.
+      shmem_path:
+        type: string
+        description:
+          Host level path to the shared memory region (e.g., /dev/shm/nexus_region).
+      size_mib:
+        type: integer
+        format: int64
+        description:
+          Size of the shared memory region in MiB.
+
   Error:
     type: object
     properties:
@@ -992,6 +1045,11 @@ definitions:
         description: Configurations for all pmem devices.
         items:
           $ref: "#/definitions/Pmem"
+      nexus:
+        type: array
+        description: Configurations for all nexus devices.
+        items:
+          $ref: "#/definitions/Nexus"
       vsock:
         $ref: "#/definitions/Vsock"
 

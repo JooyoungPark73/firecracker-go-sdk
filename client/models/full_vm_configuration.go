@@ -57,6 +57,9 @@ type FullVMConfiguration struct {
 	// Configurations for all net devices.
 	NetworkInterfaces []*NetworkInterface `json:"network-interfaces"`
 
+	// Configurations for all nexus devices.
+	Nexus []*Nexus `json:"nexus"`
+
 	// Configurations for all pmem devices.
 	Pmem []*Pmem `json:"pmem"`
 
@@ -97,6 +100,10 @@ func (m *FullVMConfiguration) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateNetworkInterfaces(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNexus(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -312,6 +319,36 @@ func (m *FullVMConfiguration) validateNetworkInterfaces(formats strfmt.Registry)
 	return nil
 }
 
+func (m *FullVMConfiguration) validateNexus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Nexus) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Nexus); i++ {
+		if swag.IsZero(m.Nexus[i]) { // not required
+			continue
+		}
+
+		if m.Nexus[i] != nil {
+			if err := m.Nexus[i].Validate(formats); err != nil {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
+					return ve.ValidateName("nexus" + "." + strconv.Itoa(i))
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
+					return ce.ValidateName("nexus" + "." + strconv.Itoa(i))
+				}
+
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *FullVMConfiguration) validatePmem(formats strfmt.Registry) error {
 	if swag.IsZero(m.Pmem) { // not required
 		return nil
@@ -398,6 +435,10 @@ func (m *FullVMConfiguration) ContextValidate(ctx context.Context, formats strfm
 	}
 
 	if err := m.contextValidateNetworkInterfaces(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNexus(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -612,6 +653,35 @@ func (m *FullVMConfiguration) contextValidateNetworkInterfaces(ctx context.Conte
 				ce := new(errors.CompositeError)
 				if stderrors.As(err, &ce) {
 					return ce.ValidateName("network-interfaces" + "." + strconv.Itoa(i))
+				}
+
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *FullVMConfiguration) contextValidateNexus(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Nexus); i++ {
+
+		if m.Nexus[i] != nil {
+
+			if swag.IsZero(m.Nexus[i]) { // not required
+				return nil
+			}
+
+			if err := m.Nexus[i].ContextValidate(ctx, formats); err != nil {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
+					return ve.ValidateName("nexus" + "." + strconv.Itoa(i))
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
+					return ce.ValidateName("nexus" + "." + strconv.Itoa(i))
 				}
 
 				return err
