@@ -26,11 +26,10 @@ type NexusDevice struct {
 type NexusOpt func(*models.Nexus)
 
 // NewNexusDevice creates a new NexusDevice builder with the specified configuration.
-func NewNexusDevice(id, shmemPath string, sizeMib int64, opts ...NexusOpt) NexusDevice {
+func NewNexusDevice(id, pathOnHost string, opts ...NexusOpt) NexusDevice {
 	n := models.Nexus{
-		ID:        &id,
-		ShmemPath: &shmemPath,
-		SizeMib:   &sizeMib,
+		ID:         &id,
+		PathOnHost: &pathOnHost,
 	}
 
 	for _, opt := range opts {
@@ -52,16 +51,9 @@ func WithNexusID(id string) NexusOpt {
 	}
 }
 
-// WithShmemPath sets the shared memory path of the nexus device.
-func WithShmemPath(path string) NexusOpt {
+// WithPathOnHost sets the host path of the nexus device backing file.
+func WithPathOnHost(path string) NexusOpt {
 	return func(n *models.Nexus) {
-		n.ShmemPath = String(path)
-	}
-}
-
-// WithSizeMib sets the size in MiB of the nexus device.
-func WithSizeMib(sizeMib int64) NexusOpt {
-	return func(n *models.Nexus) {
-		n.SizeMib = Int64(sizeMib)
+		n.PathOnHost = String(path)
 	}
 }

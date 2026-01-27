@@ -971,9 +971,8 @@ func (m *Machine) attachPmem(ctx context.Context, dev models.Pmem) error {
 
 func (m *Machine) attachNexus(ctx context.Context, dev models.Nexus) error {
 	nexusID := StringValue(dev.ID)
-	shmemPath := StringValue(dev.ShmemPath)
-	sizeMib := Int64Value(dev.SizeMib)
-	m.logger.Infof("Attaching nexus %s, shmem_path %s, size %d MiB.", nexusID, shmemPath, sizeMib)
+	pathOnHost := StringValue(dev.PathOnHost)
+	m.logger.Infof("Attaching nexus %s, path_on_host %s.", nexusID, pathOnHost)
 	respNoContent, err := m.client.PutNexusByID(ctx, nexusID, &dev)
 	if err == nil {
 		m.logger.Printf("Attached nexus %s: %s", nexusID, respNoContent.Error())
@@ -1341,11 +1340,10 @@ func (m *Machine) UpdateBalloonStats(ctx context.Context, statsPollingIntervals 
 }
 
 // CreateNexusDevice creates a nexus shared memory device if one does not exist.
-func (m *Machine) CreateNexusDevice(ctx context.Context, id, shmemPath string, sizeMib int64, opts ...PutNexusByIDOpt) error {
+func (m *Machine) CreateNexusDevice(ctx context.Context, id, pathOnHost string, opts ...PutNexusByIDOpt) error {
 	nexus := models.Nexus{
-		ID:        &id,
-		ShmemPath: &shmemPath,
-		SizeMib:   &sizeMib,
+		ID:         &id,
+		PathOnHost: &pathOnHost,
 	}
 	_, err := m.client.PutNexusByID(ctx, id, &nexus, opts...)
 

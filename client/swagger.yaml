@@ -990,22 +990,16 @@ definitions:
     type: object
     required:
       - id
-      - shmem_path
-      - size_mib
+      - path_on_host
     properties:
       id:
         type: string
         description:
           Unique identifier for this nexus device.
-      shmem_path:
+      path_on_host:
         type: string
         description:
-          Host level path to the shared memory region (e.g., /dev/shm/nexus_region).
-      size_mib:
-        type: integer
-        format: int64
-        description:
-          Size of the shared memory region in MiB.
+          Host level path to the shared memory backing file.
 
   Error:
     type: object

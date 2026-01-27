@@ -18,34 +18,27 @@ import (
 
 func TestNewNexusDevice(t *testing.T) {
 	id := "nexus0"
-	shmemPath := "/dev/shm/test_region"
-	var sizeMib int64 = 16
+	pathOnHost := "/dev/shm/test_region"
 
-	device := NewNexusDevice(id, shmemPath, sizeMib)
+	device := NewNexusDevice(id, pathOnHost)
 	nexus := device.Build()
 
 	if nexus.ID == nil || *nexus.ID != id {
 		t.Errorf("Expected ID %s, got %v", id, nexus.ID)
 	}
 
-	if nexus.ShmemPath == nil || *nexus.ShmemPath != shmemPath {
-		t.Errorf("Expected ShmemPath %s, got %v", shmemPath, nexus.ShmemPath)
-	}
-
-	if nexus.SizeMib == nil || *nexus.SizeMib != sizeMib {
-		t.Errorf("Expected SizeMib %d, got %v", sizeMib, nexus.SizeMib)
+	if nexus.PathOnHost == nil || *nexus.PathOnHost != pathOnHost {
+		t.Errorf("Expected PathOnHost %s, got %v", pathOnHost, nexus.PathOnHost)
 	}
 }
 
 func TestNexusDeviceOptions(t *testing.T) {
 	id := "nexus1"
-	shmemPath := "/dev/shm/test_region2"
-	var sizeMib int64 = 32
+	pathOnHost := "/dev/shm/test_region2"
 
-	device := NewNexusDevice("initial_id", "/dev/shm/initial", 8,
+	device := NewNexusDevice("initial_id", "/dev/shm/initial",
 		WithNexusID(id),
-		WithShmemPath(shmemPath),
-		WithSizeMib(sizeMib),
+		WithPathOnHost(pathOnHost),
 	)
 
 	nexus := device.Build()
@@ -54,42 +47,35 @@ func TestNexusDeviceOptions(t *testing.T) {
 		t.Errorf("Expected ID %s, got %v", id, nexus.ID)
 	}
 
-	if nexus.ShmemPath == nil || *nexus.ShmemPath != shmemPath {
-		t.Errorf("Expected ShmemPath %s, got %v", shmemPath, nexus.ShmemPath)
-	}
-
-	if nexus.SizeMib == nil || *nexus.SizeMib != sizeMib {
-		t.Errorf("Expected SizeMib %d, got %v", sizeMib, nexus.SizeMib)
+	if nexus.PathOnHost == nil || *nexus.PathOnHost != pathOnHost {
+		t.Errorf("Expected PathOnHost %s, got %v", pathOnHost, nexus.PathOnHost)
 	}
 }
 
 func TestNexusDeviceValidation(t *testing.T) {
 	testCases := []struct {
-		name      string
-		id        string
-		shmemPath string
-		sizeMib   int64
-		valid     bool
+		name       string
+		id         string
+		pathOnHost string
+		valid      bool
 	}{
 		{
-			name:      "Valid nexus device",
-			id:        "nexus0",
-			shmemPath: "/dev/shm/nexus_region",
-			sizeMib:   16,
-			valid:     true,
+			name:       "Valid nexus device",
+			id:         "nexus0",
+			pathOnHost: "/dev/shm/nexus_region",
+			valid:      true,
 		},
 		{
-			name:      "Valid with larger size",
-			id:        "nexus1",
-			shmemPath: "/dev/shm/large_region",
-			sizeMib:   1024,
-			valid:     true,
+			name:       "Valid with different path",
+			id:         "nexus1",
+			pathOnHost: "/dev/shm/large_region",
+			valid:      true,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			device := NewNexusDevice(tc.id, tc.shmemPath, tc.sizeMib)
+			device := NewNexusDevice(tc.id, tc.pathOnHost)
 			nexus := device.Build()
 
 			err := nexus.Validate(nil)
@@ -105,10 +91,9 @@ func TestNexusDeviceValidation(t *testing.T) {
 
 func TestNexusDeviceBuild(t *testing.T) {
 	id := "test_nexus"
-	shmemPath := "/dev/shm/test"
-	var sizeMib int64 = 64
+	pathOnHost := "/dev/shm/test"
 
-	device := NewNexusDevice(id, shmemPath, sizeMib)
+	device := NewNexusDevice(id, pathOnHost)
 	nexus1 := device.Build()
 	nexus2 := device.Build()
 
@@ -117,12 +102,8 @@ func TestNexusDeviceBuild(t *testing.T) {
 		t.Error("Multiple Build() calls should return consistent ID")
 	}
 
-	if *nexus1.ShmemPath != *nexus2.ShmemPath {
-		t.Error("Multiple Build() calls should return consistent ShmemPath")
-	}
-
-	if *nexus1.SizeMib != *nexus2.SizeMib {
-		t.Error("Multiple Build() calls should return consistent SizeMib")
+	if *nexus1.PathOnHost != *nexus2.PathOnHost {
+		t.Error("Multiple Build() calls should return consistent PathOnHost")
 	}
 }
 
@@ -130,22 +111,17 @@ func TestNexusWithFunctionalOptions(t *testing.T) {
 	// Test that functional options work correctly
 	opts := []NexusOpt{
 		WithNexusID("custom_id"),
-		WithShmemPath("/custom/path"),
-		WithSizeMib(128),
+		WithPathOnHost("/custom/path"),
 	}
 
-	device := NewNexusDevice("initial", "/initial", 1, opts...)
+	device := NewNexusDevice("initial", "/initial", opts...)
 	nexus := device.Build()
 
 	if *nexus.ID != "custom_id" {
 		t.Errorf("Expected ID 'custom_id', got '%s'", *nexus.ID)
 	}
 
-	if *nexus.ShmemPath != "/custom/path" {
-		t.Errorf("Expected ShmemPath '/custom/path', got '%s'", *nexus.ShmemPath)
-	}
-
-	if *nexus.SizeMib != 128 {
-		t.Errorf("Expected SizeMib 128, got %d", *nexus.SizeMib)
+	if *nexus.PathOnHost != "/custom/path" {
+		t.Errorf("Expected PathOnHost '/custom/path', got '%s'", *nexus.PathOnHost)
 	}
 }

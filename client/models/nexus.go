@@ -36,13 +36,9 @@ type Nexus struct {
 	// Required: true
 	ID *string `json:"id"`
 
-	// Host level path to the shared memory region (e.g., /dev/shm/nexus_region).
+	// Host level path to the shared memory backing file.
 	// Required: true
-	ShmemPath *string `json:"shmem_path"`
-
-	// Size of the shared memory region in MiB.
-	// Required: true
-	SizeMib *int64 `json:"size_mib"`
+	PathOnHost *string `json:"path_on_host"`
 }
 
 // Validate validates this nexus
@@ -53,11 +49,7 @@ func (m *Nexus) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateShmemPath(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateSizeMib(formats); err != nil {
+	if err := m.validatePathOnHost(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -76,18 +68,9 @@ func (m *Nexus) validateID(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Nexus) validateShmemPath(formats strfmt.Registry) error {
+func (m *Nexus) validatePathOnHost(formats strfmt.Registry) error {
 
-	if err := validate.Required("shmem_path", "body", m.ShmemPath); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Nexus) validateSizeMib(formats strfmt.Registry) error {
-
-	if err := validate.Required("size_mib", "body", m.SizeMib); err != nil {
+	if err := validate.Required("path_on_host", "body", m.PathOnHost); err != nil {
 		return err
 	}
 
