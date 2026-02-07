@@ -44,9 +44,6 @@ type SnapshotCreateParams struct {
 	// Type of snapshot to create. It is optional and by default, a full snapshot is created.
 	// Enum: ["Full","Diff"]
 	SnapshotType string `json:"snapshot_type,omitempty"`
-
-	// The microVM version for which we want to create the snapshot. It is optional and it defaults to the current version.
-	Version string `json:"version,omitempty"`
 }
 
 // Validate validates this snapshot create params

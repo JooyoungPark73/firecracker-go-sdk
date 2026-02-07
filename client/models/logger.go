@@ -34,12 +34,15 @@ import (
 type Logger struct {
 
 	// Set the level. The possible values are case-insensitive.
-	// Enum: ["Error","Warning","Info","Debug"]
+	// Enum: ["Error","Warning","Info","Debug","Trace","Off"]
 	Level *string `json:"level,omitempty"`
 
 	// Path to the named pipe or file for the human readable log output.
-	// Required: true
-	LogPath *string `json:"log_path"`
+	LogPath string `json:"log_path,omitempty"`
+
+	// The module path to filter log messages by.
+	// Example: api_server::request
+	Module string `json:"module,omitempty"`
 
 	// Whether or not to output the level in the logs.
 	ShowLevel *bool `json:"show_level,omitempty"`
@@ -56,10 +59,6 @@ func (m *Logger) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateLogPath(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -70,7 +69,7 @@ var loggerTypeLevelPropEnum []any
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["Error","Warning","Info","Debug"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["Error","Warning","Info","Debug","Trace","Off"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -91,6 +90,12 @@ const (
 
 	// LoggerLevelDebug captures enum value "Debug"
 	LoggerLevelDebug string = "Debug"
+
+	// LoggerLevelTrace captures enum value "Trace"
+	LoggerLevelTrace string = "Trace"
+
+	// LoggerLevelOff captures enum value "Off"
+	LoggerLevelOff string = "Off"
 )
 
 // prop value enum
@@ -108,15 +113,6 @@ func (m *Logger) validateLevel(formats strfmt.Registry) error {
 
 	// value enum
 	if err := m.validateLevelEnum("level", "body", *m.Level); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Logger) validateLogPath(formats strfmt.Registry) error {
-
-	if err := validate.Required("log_path", "body", m.LogPath); err != nil {
 		return err
 	}
 

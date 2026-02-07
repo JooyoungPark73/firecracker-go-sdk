@@ -39,14 +39,23 @@ type FullVMConfiguration struct {
 	// boot source
 	BootSource *BootSource `json:"boot-source,omitempty"`
 
+	// cpu config
+	CPUConfig *CPUConfig `json:"cpu-config,omitempty"`
+
 	// Configurations for all block devices.
 	Drives []*Drive `json:"drives"`
+
+	// entropy
+	Entropy *EntropyDevice `json:"entropy,omitempty"`
 
 	// logger
 	Logger *Logger `json:"logger,omitempty"`
 
 	// machine config
 	MachineConfig *MachineConfiguration `json:"machine-config,omitempty"`
+
+	// memory hotplug
+	MemoryHotplug *MemoryHotplugConfig `json:"memory-hotplug,omitempty"`
 
 	// metrics
 	Metrics *Metrics `json:"metrics,omitempty"`
@@ -56,6 +65,9 @@ type FullVMConfiguration struct {
 
 	// Configurations for all net devices.
 	NetworkInterfaces []*NetworkInterface `json:"network-interfaces"`
+
+	// Configurations for all pmem devices.
+	Pmem []*Pmem `json:"pmem"`
 
 	// vsock
 	Vsock *Vsock `json:"vsock,omitempty"`
@@ -73,7 +85,15 @@ func (m *FullVMConfiguration) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateCPUConfig(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateDrives(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateEntropy(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -82,6 +102,10 @@ func (m *FullVMConfiguration) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateMachineConfig(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMemoryHotplug(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -94,6 +118,10 @@ func (m *FullVMConfiguration) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateNetworkInterfaces(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePmem(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -153,6 +181,29 @@ func (m *FullVMConfiguration) validateBootSource(formats strfmt.Registry) error 
 	return nil
 }
 
+func (m *FullVMConfiguration) validateCPUConfig(formats strfmt.Registry) error {
+	if swag.IsZero(m.CPUConfig) { // not required
+		return nil
+	}
+
+	if m.CPUConfig != nil {
+		if err := m.CPUConfig.Validate(formats); err != nil {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
+				return ve.ValidateName("cpu-config")
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
+				return ce.ValidateName("cpu-config")
+			}
+
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *FullVMConfiguration) validateDrives(formats strfmt.Registry) error {
 	if swag.IsZero(m.Drives) { // not required
 		return nil
@@ -178,6 +229,29 @@ func (m *FullVMConfiguration) validateDrives(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *FullVMConfiguration) validateEntropy(formats strfmt.Registry) error {
+	if swag.IsZero(m.Entropy) { // not required
+		return nil
+	}
+
+	if m.Entropy != nil {
+		if err := m.Entropy.Validate(formats); err != nil {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
+				return ve.ValidateName("entropy")
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
+				return ce.ValidateName("entropy")
+			}
+
+			return err
+		}
 	}
 
 	return nil
@@ -220,6 +294,29 @@ func (m *FullVMConfiguration) validateMachineConfig(formats strfmt.Registry) err
 			ce := new(errors.CompositeError)
 			if stderrors.As(err, &ce) {
 				return ce.ValidateName("machine-config")
+			}
+
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *FullVMConfiguration) validateMemoryHotplug(formats strfmt.Registry) error {
+	if swag.IsZero(m.MemoryHotplug) { // not required
+		return nil
+	}
+
+	if m.MemoryHotplug != nil {
+		if err := m.MemoryHotplug.Validate(formats); err != nil {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
+				return ve.ValidateName("memory-hotplug")
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
+				return ce.ValidateName("memory-hotplug")
 			}
 
 			return err
@@ -305,6 +402,36 @@ func (m *FullVMConfiguration) validateNetworkInterfaces(formats strfmt.Registry)
 	return nil
 }
 
+func (m *FullVMConfiguration) validatePmem(formats strfmt.Registry) error {
+	if swag.IsZero(m.Pmem) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Pmem); i++ {
+		if swag.IsZero(m.Pmem[i]) { // not required
+			continue
+		}
+
+		if m.Pmem[i] != nil {
+			if err := m.Pmem[i].Validate(formats); err != nil {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
+					return ve.ValidateName("pmem" + "." + strconv.Itoa(i))
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
+					return ce.ValidateName("pmem" + "." + strconv.Itoa(i))
+				}
+
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *FullVMConfiguration) validateVsock(formats strfmt.Registry) error {
 	if swag.IsZero(m.Vsock) { // not required
 		return nil
@@ -340,7 +467,15 @@ func (m *FullVMConfiguration) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateCPUConfig(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateDrives(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEntropy(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -349,6 +484,10 @@ func (m *FullVMConfiguration) ContextValidate(ctx context.Context, formats strfm
 	}
 
 	if err := m.contextValidateMachineConfig(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMemoryHotplug(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -361,6 +500,10 @@ func (m *FullVMConfiguration) ContextValidate(ctx context.Context, formats strfm
 	}
 
 	if err := m.contextValidateNetworkInterfaces(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePmem(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -424,6 +567,31 @@ func (m *FullVMConfiguration) contextValidateBootSource(ctx context.Context, for
 	return nil
 }
 
+func (m *FullVMConfiguration) contextValidateCPUConfig(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.CPUConfig != nil {
+
+		if swag.IsZero(m.CPUConfig) { // not required
+			return nil
+		}
+
+		if err := m.CPUConfig.ContextValidate(ctx, formats); err != nil {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
+				return ve.ValidateName("cpu-config")
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
+				return ce.ValidateName("cpu-config")
+			}
+
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *FullVMConfiguration) contextValidateDrives(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Drives); i++ {
@@ -448,6 +616,31 @@ func (m *FullVMConfiguration) contextValidateDrives(ctx context.Context, formats
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *FullVMConfiguration) contextValidateEntropy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Entropy != nil {
+
+		if swag.IsZero(m.Entropy) { // not required
+			return nil
+		}
+
+		if err := m.Entropy.ContextValidate(ctx, formats); err != nil {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
+				return ve.ValidateName("entropy")
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
+				return ce.ValidateName("entropy")
+			}
+
+			return err
+		}
 	}
 
 	return nil
@@ -494,6 +687,31 @@ func (m *FullVMConfiguration) contextValidateMachineConfig(ctx context.Context, 
 			ce := new(errors.CompositeError)
 			if stderrors.As(err, &ce) {
 				return ce.ValidateName("machine-config")
+			}
+
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *FullVMConfiguration) contextValidateMemoryHotplug(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.MemoryHotplug != nil {
+
+		if swag.IsZero(m.MemoryHotplug) { // not required
+			return nil
+		}
+
+		if err := m.MemoryHotplug.ContextValidate(ctx, formats); err != nil {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
+				return ve.ValidateName("memory-hotplug")
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
+				return ce.ValidateName("memory-hotplug")
 			}
 
 			return err
@@ -571,6 +789,35 @@ func (m *FullVMConfiguration) contextValidateNetworkInterfaces(ctx context.Conte
 				ce := new(errors.CompositeError)
 				if stderrors.As(err, &ce) {
 					return ce.ValidateName("network-interfaces" + "." + strconv.Itoa(i))
+				}
+
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *FullVMConfiguration) contextValidatePmem(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Pmem); i++ {
+
+		if m.Pmem[i] != nil {
+
+			if swag.IsZero(m.Pmem[i]) { // not required
+				return nil
+			}
+
+			if err := m.Pmem[i].ContextValidate(ctx, formats); err != nil {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
+					return ve.ValidateName("pmem" + "." + strconv.Itoa(i))
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
+					return ce.ValidateName("pmem" + "." + strconv.Itoa(i))
 				}
 
 				return err

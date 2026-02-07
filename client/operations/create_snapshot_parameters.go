@@ -78,7 +78,7 @@ type CreateSnapshotParams struct {
 
 	/* Body.
 
-	   The configuration used for creating a snaphot.
+	   The configuration used for creating a snapshot.
 	*/
 	Body *models.SnapshotCreateParams
 

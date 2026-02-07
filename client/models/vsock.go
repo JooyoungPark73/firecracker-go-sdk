@@ -41,7 +41,7 @@ type Vsock struct {
 	// Required: true
 	UdsPath *string `json:"uds_path"`
 
-	// This parameter has been deprecated since v1.0.0.
+	// This parameter has been deprecated and it will be removed in future Firecracker release.
 	VsockID string `json:"vsock_id,omitempty"`
 }
 

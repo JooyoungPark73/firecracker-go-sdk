@@ -132,6 +132,34 @@ func (a *Client) DescribeBalloonConfig(params *DescribeBalloonConfigParams) (*De
 }
 
 /*
+DescribeBalloonHinting returns the balloon hinting statistics only if enabled pre boot
+*/
+func (a *Client) DescribeBalloonHinting(params *DescribeBalloonHintingParams) (*DescribeBalloonHintingOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDescribeBalloonHintingParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "describeBalloonHinting",
+		Method:             "GET",
+		PathPattern:        "/balloon/hinting/status",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &DescribeBalloonHintingReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*DescribeBalloonHintingOK), nil
+
+}
+
+/*
 DescribeBalloonStats returns the latest balloon device statistics only if enabled pre boot
 */
 func (a *Client) DescribeBalloonStats(params *DescribeBalloonStatsParams) (*DescribeBalloonStatsOK, error) {
@@ -272,6 +300,36 @@ func (a *Client) GetMachineConfiguration(params *GetMachineConfigurationParams) 
 		return nil, err
 	}
 	return result.(*GetMachineConfigurationOK), nil
+
+}
+
+/*
+GetMemoryHotplug retrieves the status of the hotpluggable memory
+
+Reuturn the status of the hotpluggable memory. This can be used to follow the progress of the guest after a PATCH API.
+*/
+func (a *Client) GetMemoryHotplug(params *GetMemoryHotplugParams) (*GetMemoryHotplugOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetMemoryHotplugParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "getMemoryHotplug",
+		Method:             "GET",
+		PathPattern:        "/hotplug/memory",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetMemoryHotplugReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetMemoryHotplugOK), nil
 
 }
 
@@ -480,6 +538,36 @@ func (a *Client) PatchMachineConfiguration(params *PatchMachineConfigurationPara
 		return nil, err
 	}
 	return result.(*PatchMachineConfigurationNoContent), nil
+
+}
+
+/*
+PatchMemoryHotplug updates the size of the hotpluggable memory region
+
+Updates the size of the hotpluggable memory region. The guest will plug and unplug memory to hit the requested memory.
+*/
+func (a *Client) PatchMemoryHotplug(params *PatchMemoryHotplugParams) (*PatchMemoryHotplugNoContent, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPatchMemoryHotplugParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "patchMemoryHotplug",
+		Method:             "PATCH",
+		PathPattern:        "/hotplug/memory",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PatchMemoryHotplugReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PatchMemoryHotplugNoContent), nil
 
 }
 
@@ -722,6 +810,36 @@ func (a *Client) PutGuestNetworkInterfaceByID(params *PutGuestNetworkInterfaceBy
 }
 
 /*
+PutGuestPmemByID creates or updates a pmem device pre boot only
+
+Creates new pmem device with ID specified by id parameter. If a pmem device with the specified ID already exists, updates its state based on new input. Will fail if update is not possible.
+*/
+func (a *Client) PutGuestPmemByID(params *PutGuestPmemByIDParams) (*PutGuestPmemByIDNoContent, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPutGuestPmemByIDParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "putGuestPmemByID",
+		Method:             "PUT",
+		PathPattern:        "/pmem/{id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PutGuestPmemByIDReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PutGuestPmemByIDNoContent), nil
+
+}
+
+/*
 PutGuestVsock creates updates a vsock device pre boot only
 
 The first call creates the device with the configuration specified in body. Subsequent calls will update the device configuration. May fail if update is not possible.
@@ -782,7 +900,7 @@ func (a *Client) PutLogger(params *PutLoggerParams) (*PutLoggerNoContent, error)
 /*
 PutMachineConfiguration updates the machine configuration of the VM pre boot only
 
-Updates the Virtual Machine Configuration with the specified input. Firecracker starts with default values for vCPU count (=1) and memory size (=128 MiB). The vCPU count is restricted to the [1, 32] range. With SMT enabled, the vCPU count is required to be either 1 or an even number in the range. otherwise there are no restrictions regarding the vCPU count. If any of the parameters has an incorrect value, the whole update fails. All parameters that are optional and are not specified are set to their default values (smt = false, track_dirty_pages = false, cpu_template = None).
+Updates the Virtual Machine Configuration with the specified input. Firecracker starts with default values for vCPU count (=1) and memory size (=128 MiB). The vCPU count is restricted to the [1, 32] range. With SMT enabled, the vCPU count is required to be either 1 or an even number in the range. otherwise there are no restrictions regarding the vCPU count. If 2M hugetlbfs pages are specified, then `mem_size_mib` must be a multiple of 2. If any of the parameters has an incorrect value, the whole update fails. All parameters that are optional and are not specified are set to their default values (smt = false, track_dirty_pages = false, cpu_template = None, huge_pages = None).
 */
 func (a *Client) PutMachineConfiguration(params *PutMachineConfigurationParams) (*PutMachineConfigurationNoContent, error) {
 	// TODO: Validate the params before sending
@@ -806,6 +924,36 @@ func (a *Client) PutMachineConfiguration(params *PutMachineConfigurationParams) 
 		return nil, err
 	}
 	return result.(*PutMachineConfigurationNoContent), nil
+
+}
+
+/*
+PutMemoryHotplug configures the hotpluggable memory
+
+Configure the hotpluggable memory, which is a virtio-mem device, with an associated memory area that can be hot(un)plugged in the guest on demand using the PATCH API.
+*/
+func (a *Client) PutMemoryHotplug(params *PutMemoryHotplugParams) (*PutMemoryHotplugNoContent, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPutMemoryHotplugParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "putMemoryHotplug",
+		Method:             "PUT",
+		PathPattern:        "/hotplug/memory",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PutMemoryHotplugReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PutMemoryHotplugNoContent), nil
 
 }
 
@@ -895,6 +1043,92 @@ func (a *Client) PutMmdsConfig(params *PutMmdsConfigParams) (*PutMmdsConfigNoCon
 
 }
 
+/*
+PutSerialDevice configures the serial console
+
+Configure the serial console, which the guest can write its kernel logs to. Has no effect if the serial console is not also enabled on the guest kernel command line
+*/
+func (a *Client) PutSerialDevice(params *PutSerialDeviceParams) (*PutSerialDeviceNoContent, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPutSerialDeviceParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "putSerialDevice",
+		Method:             "PUT",
+		PathPattern:        "/serial",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PutSerialDeviceReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PutSerialDeviceNoContent), nil
+
+}
+
+/*
+StartBalloonHinting starts a free page hinting run only if enabled pre boot
+*/
+func (a *Client) StartBalloonHinting(params *StartBalloonHintingParams) (*StartBalloonHintingOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStartBalloonHintingParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "startBalloonHinting",
+		Method:             "PATCH",
+		PathPattern:        "/balloon/hinting/start",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &StartBalloonHintingReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*StartBalloonHintingOK), nil
+
+}
+
+/*
+StopBalloonHinting stops a free page hinting run only if enabled pre boot
+*/
+func (a *Client) StopBalloonHinting(params *StopBalloonHintingParams) (*StopBalloonHintingOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStopBalloonHintingParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "stopBalloonHinting",
+		Method:             "PATCH",
+		PathPattern:        "/balloon/hinting/stop",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &StopBalloonHintingReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*StopBalloonHintingOK), nil
+
+}
+
 // SetTransport changes the transport on the client
 func (a *Client) SetTransport(transport runtime.ClientTransport) {
 	a.transport = transport
@@ -906,11 +1140,13 @@ type ClientIface interface {
 	CreateSnapshot(params *CreateSnapshotParams) (*CreateSnapshotNoContent, error)
 	CreateSyncAction(params *CreateSyncActionParams) (*CreateSyncActionNoContent, error)
 	DescribeBalloonConfig(params *DescribeBalloonConfigParams) (*DescribeBalloonConfigOK, error)
+	DescribeBalloonHinting(params *DescribeBalloonHintingParams) (*DescribeBalloonHintingOK, error)
 	DescribeBalloonStats(params *DescribeBalloonStatsParams) (*DescribeBalloonStatsOK, error)
 	DescribeInstance(params *DescribeInstanceParams) (*DescribeInstanceOK, error)
 	GetExportVMConfig(params *GetExportVMConfigParams) (*GetExportVMConfigOK, error)
 	GetFirecrackerVersion(params *GetFirecrackerVersionParams) (*GetFirecrackerVersionOK, error)
 	GetMachineConfiguration(params *GetMachineConfigurationParams) (*GetMachineConfigurationOK, error)
+	GetMemoryHotplug(params *GetMemoryHotplugParams) (*GetMemoryHotplugOK, error)
 	GetMmds(params *GetMmdsParams) (*GetMmdsOK, error)
 	LoadSnapshot(params *LoadSnapshotParams) (*LoadSnapshotNoContent, error)
 	PatchBalloon(params *PatchBalloonParams) (*PatchBalloonNoContent, error)
@@ -918,6 +1154,7 @@ type ClientIface interface {
 	PatchGuestDriveByID(params *PatchGuestDriveByIDParams) (*PatchGuestDriveByIDNoContent, error)
 	PatchGuestNetworkInterfaceByID(params *PatchGuestNetworkInterfaceByIDParams) (*PatchGuestNetworkInterfaceByIDNoContent, error)
 	PatchMachineConfiguration(params *PatchMachineConfigurationParams) (*PatchMachineConfigurationNoContent, error)
+	PatchMemoryHotplug(params *PatchMemoryHotplugParams) (*PatchMemoryHotplugNoContent, error)
 	PatchMmds(params *PatchMmdsParams) (*PatchMmdsNoContent, error)
 	PatchVM(params *PatchVMParams) (*PatchVMNoContent, error)
 	PutBalloon(params *PutBalloonParams) (*PutBalloonNoContent, error)
@@ -926,10 +1163,15 @@ type ClientIface interface {
 	PutGuestBootSource(params *PutGuestBootSourceParams) (*PutGuestBootSourceNoContent, error)
 	PutGuestDriveByID(params *PutGuestDriveByIDParams) (*PutGuestDriveByIDNoContent, error)
 	PutGuestNetworkInterfaceByID(params *PutGuestNetworkInterfaceByIDParams) (*PutGuestNetworkInterfaceByIDNoContent, error)
+	PutGuestPmemByID(params *PutGuestPmemByIDParams) (*PutGuestPmemByIDNoContent, error)
 	PutGuestVsock(params *PutGuestVsockParams) (*PutGuestVsockNoContent, error)
 	PutLogger(params *PutLoggerParams) (*PutLoggerNoContent, error)
 	PutMachineConfiguration(params *PutMachineConfigurationParams) (*PutMachineConfigurationNoContent, error)
+	PutMemoryHotplug(params *PutMemoryHotplugParams) (*PutMemoryHotplugNoContent, error)
 	PutMetrics(params *PutMetricsParams) (*PutMetricsNoContent, error)
 	PutMmds(params *PutMmdsParams) (*PutMmdsNoContent, error)
 	PutMmdsConfig(params *PutMmdsConfigParams) (*PutMmdsConfigNoContent, error)
+	PutSerialDevice(params *PutSerialDeviceParams) (*PutSerialDeviceNoContent, error)
+	StartBalloonHinting(params *StartBalloonHintingParams) (*StartBalloonHintingOK, error)
+	StopBalloonHinting(params *StopBalloonHintingParams) (*StopBalloonHintingOK, error)
 }

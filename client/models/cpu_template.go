@@ -27,7 +27,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// CPUTemplate The CPU Template defines a set of flags to be disabled from the microvm so that the features exposed to the guest are the same as in the selected instance type.
+// CPUTemplate The CPU Template defines a set of flags to be disabled from the microvm so that the features exposed to the guest are the same as in the selected instance type. This parameter has been deprecated and it will be removed in future Firecracker release.
 //
 // swagger:model CpuTemplate
 type CPUTemplate string

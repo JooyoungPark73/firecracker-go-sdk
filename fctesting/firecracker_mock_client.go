@@ -23,11 +23,13 @@ type MockClient struct {
 	CreateSnapshotFn                 func(params *ops.CreateSnapshotParams) (*ops.CreateSnapshotNoContent, error)
 	CreateSyncActionFn               func(params *ops.CreateSyncActionParams) (*ops.CreateSyncActionNoContent, error)
 	DescribeBalloonConfigFn          func(params *ops.DescribeBalloonConfigParams) (*ops.DescribeBalloonConfigOK, error)
+	DescribeBalloonHintingFn         func(params *ops.DescribeBalloonHintingParams) (*ops.DescribeBalloonHintingOK, error)
 	DescribeBalloonStatsFn           func(params *ops.DescribeBalloonStatsParams) (*ops.DescribeBalloonStatsOK, error)
 	DescribeInstanceFn               func(params *ops.DescribeInstanceParams) (*ops.DescribeInstanceOK, error)
 	GetExportVMConfigFn              func(params *ops.GetExportVMConfigParams) (*ops.GetExportVMConfigOK, error)
 	GetFirecrackerVersionFn          func(params *ops.GetFirecrackerVersionParams) (*ops.GetFirecrackerVersionOK, error)
 	GetMachineConfigurationFn        func(params *ops.GetMachineConfigurationParams) (*ops.GetMachineConfigurationOK, error)
+	GetMemoryHotplugFn               func(params *ops.GetMemoryHotplugParams) (*ops.GetMemoryHotplugOK, error)
 	GetMmdsFn                        func(params *ops.GetMmdsParams) (*ops.GetMmdsOK, error)
 	LoadSnapshotFn                   func(params *ops.LoadSnapshotParams) (*ops.LoadSnapshotNoContent, error)
 	PatchBalloonFn                   func(params *ops.PatchBalloonParams) (*ops.PatchBalloonNoContent, error)
@@ -35,6 +37,7 @@ type MockClient struct {
 	PatchGuestDriveByIDFn            func(params *ops.PatchGuestDriveByIDParams) (*ops.PatchGuestDriveByIDNoContent, error)
 	PatchGuestNetworkInterfaceByIDFn func(params *ops.PatchGuestNetworkInterfaceByIDParams) (*ops.PatchGuestNetworkInterfaceByIDNoContent, error)
 	PatchMachineConfigurationFn      func(params *ops.PatchMachineConfigurationParams) (*ops.PatchMachineConfigurationNoContent, error)
+	PatchMemoryHotplugFn             func(params *ops.PatchMemoryHotplugParams) (*ops.PatchMemoryHotplugNoContent, error)
 	PatchMmdsFn                      func(params *ops.PatchMmdsParams) (*ops.PatchMmdsNoContent, error)
 	PatchVMFn                        func(params *ops.PatchVMParams) (*ops.PatchVMNoContent, error)
 	PutBalloonFn                     func(params *ops.PutBalloonParams) (*ops.PutBalloonNoContent, error)
@@ -43,12 +46,17 @@ type MockClient struct {
 	PutGuestBootSourceFn             func(params *ops.PutGuestBootSourceParams) (*ops.PutGuestBootSourceNoContent, error)
 	PutGuestDriveByIDFn              func(params *ops.PutGuestDriveByIDParams) (*ops.PutGuestDriveByIDNoContent, error)
 	PutGuestNetworkInterfaceByIDFn   func(params *ops.PutGuestNetworkInterfaceByIDParams) (*ops.PutGuestNetworkInterfaceByIDNoContent, error)
+	PutGuestPmemByIDFn               func(params *ops.PutGuestPmemByIDParams) (*ops.PutGuestPmemByIDNoContent, error)
 	PutGuestVsockFn                  func(params *ops.PutGuestVsockParams) (*ops.PutGuestVsockNoContent, error)
 	PutLoggerFn                      func(params *ops.PutLoggerParams) (*ops.PutLoggerNoContent, error)
 	PutMachineConfigurationFn        func(params *ops.PutMachineConfigurationParams) (*ops.PutMachineConfigurationNoContent, error)
+	PutMemoryHotplugFn               func(params *ops.PutMemoryHotplugParams) (*ops.PutMemoryHotplugNoContent, error)
 	PutMetricsFn                     func(params *ops.PutMetricsParams) (*ops.PutMetricsNoContent, error)
 	PutMmdsFn                        func(params *ops.PutMmdsParams) (*ops.PutMmdsNoContent, error)
 	PutMmdsConfigFn                  func(params *ops.PutMmdsConfigParams) (*ops.PutMmdsConfigNoContent, error)
+	PutSerialDeviceFn                func(params *ops.PutSerialDeviceParams) (*ops.PutSerialDeviceNoContent, error)
+	StartBalloonHintingFn            func(params *ops.StartBalloonHintingParams) (*ops.StartBalloonHintingOK, error)
+	StopBalloonHintingFn             func(params *ops.StopBalloonHintingParams) (*ops.StopBalloonHintingOK, error)
 }
 
 func (c *MockClient) CreateSnapshot(params *ops.CreateSnapshotParams) (*ops.CreateSnapshotNoContent, error) {
@@ -70,6 +78,14 @@ func (c *MockClient) CreateSyncAction(params *ops.CreateSyncActionParams) (*ops.
 func (c *MockClient) DescribeBalloonConfig(params *ops.DescribeBalloonConfigParams) (*ops.DescribeBalloonConfigOK, error) {
 	if c.DescribeBalloonConfigFn != nil {
 		return c.DescribeBalloonConfigFn(params)
+	}
+
+	return nil, nil
+}
+
+func (c *MockClient) DescribeBalloonHinting(params *ops.DescribeBalloonHintingParams) (*ops.DescribeBalloonHintingOK, error) {
+	if c.DescribeBalloonHintingFn != nil {
+		return c.DescribeBalloonHintingFn(params)
 	}
 
 	return nil, nil
@@ -110,6 +126,14 @@ func (c *MockClient) GetFirecrackerVersion(params *ops.GetFirecrackerVersionPara
 func (c *MockClient) GetMachineConfiguration(params *ops.GetMachineConfigurationParams) (*ops.GetMachineConfigurationOK, error) {
 	if c.GetMachineConfigurationFn != nil {
 		return c.GetMachineConfigurationFn(params)
+	}
+
+	return nil, nil
+}
+
+func (c *MockClient) GetMemoryHotplug(params *ops.GetMemoryHotplugParams) (*ops.GetMemoryHotplugOK, error) {
+	if c.GetMemoryHotplugFn != nil {
+		return c.GetMemoryHotplugFn(params)
 	}
 
 	return nil, nil
@@ -166,6 +190,14 @@ func (c *MockClient) PatchGuestNetworkInterfaceByID(params *ops.PatchGuestNetwor
 func (c *MockClient) PatchMachineConfiguration(params *ops.PatchMachineConfigurationParams) (*ops.PatchMachineConfigurationNoContent, error) {
 	if c.PatchMachineConfigurationFn != nil {
 		return c.PatchMachineConfigurationFn(params)
+	}
+
+	return nil, nil
+}
+
+func (c *MockClient) PatchMemoryHotplug(params *ops.PatchMemoryHotplugParams) (*ops.PatchMemoryHotplugNoContent, error) {
+	if c.PatchMemoryHotplugFn != nil {
+		return c.PatchMemoryHotplugFn(params)
 	}
 
 	return nil, nil
@@ -235,6 +267,14 @@ func (c *MockClient) PutGuestNetworkInterfaceByID(params *ops.PutGuestNetworkInt
 	return nil, nil
 }
 
+func (c *MockClient) PutGuestPmemByID(params *ops.PutGuestPmemByIDParams) (*ops.PutGuestPmemByIDNoContent, error) {
+	if c.PutGuestPmemByIDFn != nil {
+		return c.PutGuestPmemByIDFn(params)
+	}
+
+	return nil, nil
+}
+
 func (c *MockClient) PutGuestVsock(params *ops.PutGuestVsockParams) (*ops.PutGuestVsockNoContent, error) {
 	if c.PutGuestVsockFn != nil {
 		return c.PutGuestVsockFn(params)
@@ -259,6 +299,14 @@ func (c *MockClient) PutMachineConfiguration(params *ops.PutMachineConfiguration
 	return nil, nil
 }
 
+func (c *MockClient) PutMemoryHotplug(params *ops.PutMemoryHotplugParams) (*ops.PutMemoryHotplugNoContent, error) {
+	if c.PutMemoryHotplugFn != nil {
+		return c.PutMemoryHotplugFn(params)
+	}
+
+	return nil, nil
+}
+
 func (c *MockClient) PutMetrics(params *ops.PutMetricsParams) (*ops.PutMetricsNoContent, error) {
 	if c.PutMetricsFn != nil {
 		return c.PutMetricsFn(params)
@@ -278,6 +326,30 @@ func (c *MockClient) PutMmds(params *ops.PutMmdsParams) (*ops.PutMmdsNoContent, 
 func (c *MockClient) PutMmdsConfig(params *ops.PutMmdsConfigParams) (*ops.PutMmdsConfigNoContent, error) {
 	if c.PutMmdsConfigFn != nil {
 		return c.PutMmdsConfigFn(params)
+	}
+
+	return nil, nil
+}
+
+func (c *MockClient) PutSerialDevice(params *ops.PutSerialDeviceParams) (*ops.PutSerialDeviceNoContent, error) {
+	if c.PutSerialDeviceFn != nil {
+		return c.PutSerialDeviceFn(params)
+	}
+
+	return nil, nil
+}
+
+func (c *MockClient) StartBalloonHinting(params *ops.StartBalloonHintingParams) (*ops.StartBalloonHintingOK, error) {
+	if c.StartBalloonHintingFn != nil {
+		return c.StartBalloonHintingFn(params)
+	}
+
+	return nil, nil
+}
+
+func (c *MockClient) StopBalloonHinting(params *ops.StopBalloonHintingParams) (*ops.StopBalloonHintingOK, error) {
+	if c.StopBalloonHintingFn != nil {
+		return c.StopBalloonHintingFn(params)
 	}
 
 	return nil, nil
