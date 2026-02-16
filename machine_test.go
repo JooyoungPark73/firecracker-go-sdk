@@ -45,7 +45,6 @@ import (
 	models "github.com/firecracker-microvm/firecracker-go-sdk/client/models"
 	ops "github.com/firecracker-microvm/firecracker-go-sdk/client/operations"
 	"github.com/firecracker-microvm/firecracker-go-sdk/fctesting"
-	"github.com/firecracker-microvm/firecracker-go-sdk/internal"
 )
 
 const (
@@ -572,9 +571,6 @@ func TestStartVMMOnce(t *testing.T) {
 			MemSizeMib: Int64(64),
 			Smt:        Bool(false),
 		},
-	}
-	if cpu_temp, err := internal.SupportCPUTemplate(); cpu_temp && err == nil {
-		cfg.MachineCfg.CPUTemplate = models.NewCPUTemplate(models.CPUTemplateT2)
 	}
 	ctx := context.Background()
 	cmd := VMCommandBuilder{}.

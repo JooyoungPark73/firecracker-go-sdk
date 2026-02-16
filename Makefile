@@ -17,8 +17,8 @@ DISABLE_ROOT_TESTS?=1
 DOCKER_IMAGE_TAG?=latest
 EXTRAGOARGS:=
 FIRECRACKER_DIR=build/firecracker
-arch=$(shell uname -m)
-FIRECRACKER_TARGET?=$(arch)-unknown-linux-musl
+ARCH=$(shell uname -m)
+FIRECRACKER_TARGET?=$(ARCH)-unknown-linux-musl
 
 FC_TEST_DATA_PATH?=testdata
 FC_TEST_BIN_PATH:=$(FC_TEST_DATA_PATH)/bin
@@ -29,16 +29,30 @@ UID = $(shell id -u)
 GID = $(shell id -g)
 
 # Version has to be in format of vx.x.x
-firecracker_version=v1.14.1
-ci_version=$(basename $(firecracker_version))
-kernel_version=5.10.167
+firecracker_version=v1.14
+CI_VERSION=$(basename $(firecracker_version))
+KERNEL_VERSION=6.1
 ubuntu_version=24.04
-kernel_url=https://s3.amazonaws.com/spec.ccfc.min/firecracker-ci/$(ci_version)/$(arch)/vmlinux-$(kernel_version)
-ubuntu_rootfs_url=https://s3.amazonaws.com/spec.ccfc.min/ci-artifacts/disks/$(arch)/ubuntu-$(ubuntu_version).ext4
-ubuntu_ssh_key_url=https://s3.amazonaws.com/spec.ccfc.min/ci-artifacts/disks/$(arch)/ubuntu-$(ubuntu_version).id_rsa
+
+# URL to download CI artifacts
+### Kernel
+latest_kernel_key=$(wget "http://spec.ccfc.min.s3.amazonaws.com/?prefix=firecracker-ci/$(CI_VERSION)/$(ARCH)/vmlinux-$(KERNEL_VERSION)&list-type=2" -O - 2>/dev/null \
+	| grep "(?<=<Key>)(firecracker-ci/$(CI_VERSION)/$(ARCH)/vmlinux-$(KERNEL_VERSION)\.[0-9]{3})(?=</Key>)" -o -P)
+
+kernel_url=https://s3.amazonaws.com/spec.ccfc.min/${latest_kernel_key}
+
+### Ubuntu
+latest_ubuntu_key=$(curl "http://spec.ccfc.min.s3.amazonaws.com/?prefix=firecracker-ci/$(CI_VERSION)/$(ARCH)/ubuntu-$(ubuntu_version)&list-type=2" \
+    | grep -oP "(?<=<Key>)(firecracker-ci/$CI_VERSION/$ARCH/ubuntu-[0-9]+\.[0-9]+\.squashfs)(?=</Key>)" \
+    | sort -V | tail -1)
+ubuntu_version=$(basename $latest_ubuntu_key .squashfs | grep -oE '[0-9]+\.[0-9]+')
+ubuntu_rootfs_url=https://s3.amazonaws.com/spec.ccfc.min/${latest_ubuntu_key}
+
+# ubuntu_rootfs_url=https://s3.amazonaws.com/spec.ccfc.min/ci-artifacts/disks/$(arch)/ubuntu-$(ubuntu_version).ext4
+# ubuntu_ssh_key_url=https://s3.amazonaws.com/spec.ccfc.min/ci-artifacts/disks/$(arch)/ubuntu-$(ubuntu_version).id_rsa
 
 # The below files are needed and can be downloaded from the internet
-release_url=https://github.com/firecracker-microvm/firecracker/releases/download/$(firecracker_version)/firecracker-$(firecracker_version)-$(arch).tgz
+release_url=https://github.com/firecracker-microvm/firecracker/releases/download/$(firecracker_version)/firecracker-$(firecracker_version)-$(ARCH).tgz
 
 testdata_objects = \
 $(FC_TEST_DATA_PATH)/firecracker \
@@ -112,8 +126,29 @@ $(FC_TEST_DATA_PATH)/root-drive.img:
 
 # Download pre-built rootfs image and its ssh key from S3
 $(FC_TEST_DATA_PATH)/root-drive-ssh-key $(FC_TEST_DATA_PATH)/root-drive-with-ssh.img: 
-	$(curl) -o $(FC_TEST_DATA_PATH)/root-drive-with-ssh.img $(ubuntu_rootfs_url)
-	$(curl) -o $(FC_TEST_DATA_PATH)/root-drive-ssh-key $(ubuntu_ssh_key_url)
+#	we will refactor below
+# 	unsquashfs ubuntu-$ubuntu_version.squashfs.upstream
+# 	ssh-keygen -f id_rsa -N ""
+# 	cp -v id_rsa.pub squashfs-root/root/.ssh/authorized_keys
+# 	mv -v id_rsa ./ubuntu-$ubuntu_version.id_rsa
+# 	# create ext4 filesystem image
+# 	sudo chown -R root:root squashfs-root
+# 	truncate -s 1G ubuntu-$ubuntu_version.ext4
+# 	sudo mkfs.ext4 -d squashfs-root -F ubuntu-$ubuntu_version.ext4
+
+
+	$(curl) -o $(FC_TEST_DATA_PATH)/ubuntu-$(ubuntu_version).squashfs.upstream $(ubuntu_rootfs_url)
+	unsquashfs $(FC_TEST_DATA_PATH)/ubuntu-$(ubuntu_version).squashfs.upstream -d $(FC_TEST_DATA_PATH)/ubuntu-rootfs
+	ssh-keygen -f id_rsa -N ""
+	cp -v id_rsa.pub $(FC_TEST_DATA_PATH)/ubuntu-rootfs/root/.ssh/authorized_keys
+	mv -v id_rsa $(FC_TEST_DATA_PATH)/root-drive-ssh-key
+# 	create ext4 filesystem image
+	sudo chown -R root:root $(FC_TEST_DATA_PATH)/ubuntu-rootfs
+	truncate -s 1G $(FC_TEST_DATA_PATH)/root-drive-with-ssh.img
+	sudo mkfs.ext4 -d $(FC_TEST_DATA_PATH)/ubuntu-rootfs -F $(FC_TEST_DATA_PATH)/root-drive-with-ssh.img
+
+# 	$(curl) -o $(FC_TEST_DATA_PATH)/root-drive-with-ssh.img $(ubuntu_rootfs_url)
+# 	$(curl) -o $(FC_TEST_DATA_PATH)/root-drive-ssh-key $(ubuntu_ssh_key_url)
 
 $(FC_TEST_BIN_PATH)/ptp:
 	$(call install_go,github.com/containernetworking/plugins/plugins/main/ptp,v1.9.0)
