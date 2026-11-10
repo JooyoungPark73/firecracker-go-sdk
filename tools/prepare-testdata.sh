@@ -8,6 +8,13 @@ mkdir -p "$dest"
 dest=$(cd "$dest" && pwd)
 artifact_base=https://s3.amazonaws.com/spec.ccfc.min/firecracker-ci/20261105-6ea6634994fa-0/x86_64
 
+# External fixture directories also need the small inputs checked into this
+# revision. Go tests resolve all fixtures through FC_TEST_DATA_PATH.
+if [ "$dest" != "$PWD/testdata" ]; then
+    install -m 644 testdata/drive-2.img testdata/drive-3.img "$dest/"
+    install -m 755 testdata/sigprint.sh "$dest/sigprint.sh"
+fi
+
 fetch() {
     local url=$1 output=$2 checksum=$3
     if ! echo "$checksum  $output" | sha256sum --check --status; then
