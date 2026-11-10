@@ -24,7 +24,7 @@ func TestReleaseAPI(t *testing.T) {
 	if os.Getenv("FC_TEST_RELEASE_API") != "1" {
 		t.Skip("set FC_TEST_RELEASE_API=1 to exercise the pinned Firecracker binary")
 	}
-	binary, err := filepath.Abs(envOrDefault(firecrackerBinaryOverrideEnv, "testdata/firecracker"))
+	binary, err := filepath.Abs(envOrDefault(firecrackerBinaryOverrideEnv, filepath.Join(testDataPath, "firecracker")))
 	require.NoError(t, err)
 	version, err := exec.Command(binary, "--version").CombinedOutput()
 	require.NoError(t, err)
