@@ -33,6 +33,9 @@ import (
 // swagger:model NetworkInterface
 type NetworkInterface struct {
 
+	// dmb size mib
+	DmbSizeMib DmbSizeMib `json:"dmb_size_mib,omitempty"`
+
 	// guest mac
 	GuestMac string `json:"guest_mac,omitempty"`
 
@@ -43,6 +46,11 @@ type NetworkInterface struct {
 	// iface id
 	// Required: true
 	IfaceID *string `json:"iface_id"`
+
+	// MTU to advertise to the guest via VIRTIO_NET_F_MTU. When set, a compatible guest driver will configure the interface with this MTU. When absent, VIRTIO_NET_F_MTU is not advertised and the guest uses its default MTU.
+	// Maximum: 65535
+	// Minimum: 68
+	Mtu int64 `json:"mtu,omitempty"`
 
 	// rx rate limiter
 	RxRateLimiter *RateLimiter `json:"rx_rate_limiter,omitempty"`
@@ -55,11 +63,19 @@ type NetworkInterface struct {
 func (m *NetworkInterface) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateDmbSizeMib(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateHostDevName(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateIfaceID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMtu(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -77,6 +93,27 @@ func (m *NetworkInterface) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *NetworkInterface) validateDmbSizeMib(formats strfmt.Registry) error {
+	if swag.IsZero(m.DmbSizeMib) { // not required
+		return nil
+	}
+
+	if err := m.DmbSizeMib.Validate(formats); err != nil {
+		ve := new(errors.Validation)
+		if stderrors.As(err, &ve) {
+			return ve.ValidateName("dmb_size_mib")
+		}
+		ce := new(errors.CompositeError)
+		if stderrors.As(err, &ce) {
+			return ce.ValidateName("dmb_size_mib")
+		}
+
+		return err
+	}
+
+	return nil
+}
+
 func (m *NetworkInterface) validateHostDevName(formats strfmt.Registry) error {
 
 	if err := validate.Required("host_dev_name", "body", m.HostDevName); err != nil {
@@ -89,6 +126,22 @@ func (m *NetworkInterface) validateHostDevName(formats strfmt.Registry) error {
 func (m *NetworkInterface) validateIfaceID(formats strfmt.Registry) error {
 
 	if err := validate.Required("iface_id", "body", m.IfaceID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetworkInterface) validateMtu(formats strfmt.Registry) error {
+	if swag.IsZero(m.Mtu) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("mtu", "body", m.Mtu, 68, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("mtu", "body", m.Mtu, 65535, false); err != nil {
 		return err
 	}
 
@@ -145,6 +198,10 @@ func (m *NetworkInterface) validateTxRateLimiter(formats strfmt.Registry) error 
 func (m *NetworkInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateDmbSizeMib(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateRxRateLimiter(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -156,6 +213,28 @@ func (m *NetworkInterface) ContextValidate(ctx context.Context, formats strfmt.R
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *NetworkInterface) contextValidateDmbSizeMib(ctx context.Context, formats strfmt.Registry) error {
+
+	if swag.IsZero(m.DmbSizeMib) { // not required
+		return nil
+	}
+
+	if err := m.DmbSizeMib.ContextValidate(ctx, formats); err != nil {
+		ve := new(errors.Validation)
+		if stderrors.As(err, &ve) {
+			return ve.ValidateName("dmb_size_mib")
+		}
+		ce := new(errors.CompositeError)
+		if stderrors.As(err, &ce) {
+			return ce.ValidateName("dmb_size_mib")
+		}
+
+		return err
+	}
+
 	return nil
 }
 

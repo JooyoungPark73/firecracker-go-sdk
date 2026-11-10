@@ -32,9 +32,15 @@ import (
 // swagger:model Metrics
 type Metrics struct {
 
+	// Whether to emit the microVM instance id (the value passed to the jailer "--id") as a top-level "id" field on each metrics line.
+	EmitID *bool `json:"emit_id,omitempty"`
+
 	// Path to the named pipe or file where the JSON-formatted metrics are flushed.
 	// Required: true
 	MetricsPath *string `json:"metrics_path"`
+
+	// Operator-defined key-value pairs emitted under a top-level "properties" field on each metrics line.
+	Properties map[string]string `json:"properties,omitempty"`
 }
 
 // Validate validates this metrics

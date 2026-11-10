@@ -37,9 +37,9 @@ type MachineConfiguration struct {
 	// cpu template
 	CPUTemplate *CPUTemplate `json:"cpu_template,omitempty"`
 
-	// Which huge pages configuration (if any) should be used to back guest memory.
-	// Enum: ["None","2M"]
-	HugePages string `json:"huge_pages,omitempty"`
+	// Which huge pages configuration should be used to back guest memory. "None" uses regular 4K pages. "Transparent" enables THP via madvise(MADV_HUGEPAGE). "2M" uses explicit hugetlbfs 2MB pages.
+	// Enum: ["None","Transparent","2M"]
+	HugePages *string `json:"huge_pages,omitempty"`
 
 	// Memory size of VM
 	// Required: true
@@ -53,7 +53,6 @@ type MachineConfiguration struct {
 
 	// Number of vCPUs (either 1 or an even number)
 	// Required: true
-	// Maximum: 32
 	// Minimum: 1
 	VcpuCount *int64 `json:"vcpu_count"`
 }
@@ -111,7 +110,7 @@ var machineConfigurationTypeHugePagesPropEnum []any
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["None","2M"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["None","Transparent","2M"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -123,6 +122,9 @@ const (
 
 	// MachineConfigurationHugePagesNone captures enum value "None"
 	MachineConfigurationHugePagesNone string = "None"
+
+	// MachineConfigurationHugePagesTransparent captures enum value "Transparent"
+	MachineConfigurationHugePagesTransparent string = "Transparent"
 
 	// MachineConfigurationHugePagesNr2M captures enum value "2M"
 	MachineConfigurationHugePagesNr2M string = "2M"
@@ -142,7 +144,7 @@ func (m *MachineConfiguration) validateHugePages(formats strfmt.Registry) error 
 	}
 
 	// value enum
-	if err := m.validateHugePagesEnum("huge_pages", "body", m.HugePages); err != nil {
+	if err := m.validateHugePagesEnum("huge_pages", "body", *m.HugePages); err != nil {
 		return err
 	}
 
@@ -165,10 +167,6 @@ func (m *MachineConfiguration) validateVcpuCount(formats strfmt.Registry) error 
 	}
 
 	if err := validate.MinimumInt("vcpu_count", "body", *m.VcpuCount, 1, false); err != nil {
-		return err
-	}
-
-	if err := validate.MaximumInt("vcpu_count", "body", *m.VcpuCount, 32, false); err != nil {
 		return err
 	}
 

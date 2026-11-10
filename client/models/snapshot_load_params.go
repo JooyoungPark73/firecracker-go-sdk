@@ -20,6 +20,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 	stderrors "errors"
 	"strconv"
 
@@ -34,8 +35,15 @@ import (
 // swagger:model SnapshotLoadParams
 type SnapshotLoadParams struct {
 
+	// [x86_64 only] When set to true, passes KVM_CLOCK_REALTIME to KVM_SET_CLOCK on restore, advancing kvmclock by the wall-clock time elapsed since the snapshot was taken. When false (default), kvmclock resumes from where it was at snapshot time. This option may be extended to other clock sources and CPU architectures in the future.
+	ClockRealtime bool `json:"clock_realtime,omitempty"`
+
 	// (Deprecated) Enable dirty page tracking to improve space efficiency of diff snapshots
 	EnableDiffSnapshots bool `json:"enable_diff_snapshots,omitempty"`
+
+	// Selects the huge pages configuration for the restored microVM. Snapshot reuses the value serialized in the snapshot and is the default when this field is omitted; None uses the host's default memory-mapping behavior. Explicit hugetlbfs (`2M`) pages require a UFFD memory backend. With UFFD, the effectiveness of transparent huge pages may be limited.
+	// Enum: ["Snapshot","None","Transparent","2M"]
+	HugePages string `json:"huge_pages,omitempty"`
 
 	// Configuration for the backend that handles memory load. If this field is specified, `mem_file_path` is forbidden. Either `mem_backend` or `mem_file_path` must be present at a time.
 	MemBackend *MemoryBackend `json:"mem_backend,omitempty"`
@@ -55,11 +63,18 @@ type SnapshotLoadParams struct {
 
 	// Enable dirty page tracking to improve space efficiency of diff snapshots
 	TrackDirtyPages bool `json:"track_dirty_pages,omitempty"`
+
+	// Overrides the vsock device's UDS path on snapshot restore. This is useful for restoring a snapshot with a different socket path than the one used when the snapshot was created. For example, when the original socket path is no longer available or when deploying to a different environment.
+	VsockOverride *VsockOverride `json:"vsock_override,omitempty"`
 }
 
 // Validate validates this snapshot load params
 func (m *SnapshotLoadParams) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateHugePages(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateMemBackend(formats); err != nil {
 		res = append(res, err)
@@ -73,9 +88,61 @@ func (m *SnapshotLoadParams) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateVsockOverride(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+var snapshotLoadParamsTypeHugePagesPropEnum []any
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["Snapshot","None","Transparent","2M"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		snapshotLoadParamsTypeHugePagesPropEnum = append(snapshotLoadParamsTypeHugePagesPropEnum, v)
+	}
+}
+
+const (
+
+	// SnapshotLoadParamsHugePagesSnapshot captures enum value "Snapshot"
+	SnapshotLoadParamsHugePagesSnapshot string = "Snapshot"
+
+	// SnapshotLoadParamsHugePagesNone captures enum value "None"
+	SnapshotLoadParamsHugePagesNone string = "None"
+
+	// SnapshotLoadParamsHugePagesTransparent captures enum value "Transparent"
+	SnapshotLoadParamsHugePagesTransparent string = "Transparent"
+
+	// SnapshotLoadParamsHugePagesNr2M captures enum value "2M"
+	SnapshotLoadParamsHugePagesNr2M string = "2M"
+)
+
+// prop value enum
+func (m *SnapshotLoadParams) validateHugePagesEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, snapshotLoadParamsTypeHugePagesPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SnapshotLoadParams) validateHugePages(formats strfmt.Registry) error {
+	if swag.IsZero(m.HugePages) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateHugePagesEnum("huge_pages", "body", m.HugePages); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -141,6 +208,29 @@ func (m *SnapshotLoadParams) validateSnapshotPath(formats strfmt.Registry) error
 	return nil
 }
 
+func (m *SnapshotLoadParams) validateVsockOverride(formats strfmt.Registry) error {
+	if swag.IsZero(m.VsockOverride) { // not required
+		return nil
+	}
+
+	if m.VsockOverride != nil {
+		if err := m.VsockOverride.Validate(formats); err != nil {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
+				return ve.ValidateName("vsock_override")
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
+				return ce.ValidateName("vsock_override")
+			}
+
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this snapshot load params based on the context it is used
 func (m *SnapshotLoadParams) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -150,6 +240,10 @@ func (m *SnapshotLoadParams) ContextValidate(ctx context.Context, formats strfmt
 	}
 
 	if err := m.contextValidateNetworkOverrides(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVsockOverride(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -208,6 +302,31 @@ func (m *SnapshotLoadParams) contextValidateNetworkOverrides(ctx context.Context
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *SnapshotLoadParams) contextValidateVsockOverride(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.VsockOverride != nil {
+
+		if swag.IsZero(m.VsockOverride) { // not required
+			return nil
+		}
+
+		if err := m.VsockOverride.ContextValidate(ctx, formats); err != nil {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
+				return ve.ValidateName("vsock_override")
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
+				return ce.ValidateName("vsock_override")
+			}
+
+			return err
+		}
 	}
 
 	return nil

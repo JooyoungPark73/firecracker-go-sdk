@@ -26,6 +26,7 @@ type MockClient struct {
 	DescribeBalloonHintingFn         func(params *ops.DescribeBalloonHintingParams) (*ops.DescribeBalloonHintingOK, error)
 	DescribeBalloonStatsFn           func(params *ops.DescribeBalloonStatsParams) (*ops.DescribeBalloonStatsOK, error)
 	DescribeInstanceFn               func(params *ops.DescribeInstanceParams) (*ops.DescribeInstanceOK, error)
+	GetEnclaveConfigurationFn        func(params *ops.GetEnclaveConfigurationParams) (*ops.GetEnclaveConfigurationOK, error)
 	GetExportVMConfigFn              func(params *ops.GetExportVMConfigParams) (*ops.GetExportVMConfigOK, error)
 	GetFirecrackerVersionFn          func(params *ops.GetFirecrackerVersionParams) (*ops.GetFirecrackerVersionOK, error)
 	GetMachineConfigurationFn        func(params *ops.GetMachineConfigurationParams) (*ops.GetMachineConfigurationOK, error)
@@ -36,12 +37,14 @@ type MockClient struct {
 	PatchBalloonStatsIntervalFn      func(params *ops.PatchBalloonStatsIntervalParams) (*ops.PatchBalloonStatsIntervalNoContent, error)
 	PatchGuestDriveByIDFn            func(params *ops.PatchGuestDriveByIDParams) (*ops.PatchGuestDriveByIDNoContent, error)
 	PatchGuestNetworkInterfaceByIDFn func(params *ops.PatchGuestNetworkInterfaceByIDParams) (*ops.PatchGuestNetworkInterfaceByIDNoContent, error)
+	PatchGuestPmemByIDFn             func(params *ops.PatchGuestPmemByIDParams) (*ops.PatchGuestPmemByIDNoContent, error)
 	PatchMachineConfigurationFn      func(params *ops.PatchMachineConfigurationParams) (*ops.PatchMachineConfigurationNoContent, error)
 	PatchMemoryHotplugFn             func(params *ops.PatchMemoryHotplugParams) (*ops.PatchMemoryHotplugNoContent, error)
 	PatchMmdsFn                      func(params *ops.PatchMmdsParams) (*ops.PatchMmdsNoContent, error)
 	PatchVMFn                        func(params *ops.PatchVMParams) (*ops.PatchVMNoContent, error)
 	PutBalloonFn                     func(params *ops.PutBalloonParams) (*ops.PutBalloonNoContent, error)
 	PutCPUConfigurationFn            func(params *ops.PutCPUConfigurationParams) (*ops.PutCPUConfigurationNoContent, error)
+	PutEnclaveConfigurationFn        func(params *ops.PutEnclaveConfigurationParams) (*ops.PutEnclaveConfigurationNoContent, error)
 	PutEntropyDeviceFn               func(params *ops.PutEntropyDeviceParams) (*ops.PutEntropyDeviceNoContent, error)
 	PutGuestBootSourceFn             func(params *ops.PutGuestBootSourceParams) (*ops.PutGuestBootSourceNoContent, error)
 	PutGuestDriveByIDFn              func(params *ops.PutGuestDriveByIDParams) (*ops.PutGuestDriveByIDNoContent, error)
@@ -55,8 +58,8 @@ type MockClient struct {
 	PutMmdsFn                        func(params *ops.PutMmdsParams) (*ops.PutMmdsNoContent, error)
 	PutMmdsConfigFn                  func(params *ops.PutMmdsConfigParams) (*ops.PutMmdsConfigNoContent, error)
 	PutSerialDeviceFn                func(params *ops.PutSerialDeviceParams) (*ops.PutSerialDeviceNoContent, error)
-	StartBalloonHintingFn            func(params *ops.StartBalloonHintingParams) (*ops.StartBalloonHintingOK, error)
-	StopBalloonHintingFn             func(params *ops.StopBalloonHintingParams) (*ops.StopBalloonHintingOK, error)
+	StartBalloonHintingFn            func(params *ops.StartBalloonHintingParams) (*ops.StartBalloonHintingNoContent, error)
+	StopBalloonHintingFn             func(params *ops.StopBalloonHintingParams) (*ops.StopBalloonHintingNoContent, error)
 }
 
 func (c *MockClient) CreateSnapshot(params *ops.CreateSnapshotParams) (*ops.CreateSnapshotNoContent, error) {
@@ -102,6 +105,14 @@ func (c *MockClient) DescribeBalloonStats(params *ops.DescribeBalloonStatsParams
 func (c *MockClient) DescribeInstance(params *ops.DescribeInstanceParams) (*ops.DescribeInstanceOK, error) {
 	if c.DescribeInstanceFn != nil {
 		return c.DescribeInstanceFn(params)
+	}
+
+	return nil, nil
+}
+
+func (c *MockClient) GetEnclaveConfiguration(params *ops.GetEnclaveConfigurationParams) (*ops.GetEnclaveConfigurationOK, error) {
+	if c.GetEnclaveConfigurationFn != nil {
+		return c.GetEnclaveConfigurationFn(params)
 	}
 
 	return nil, nil
@@ -187,6 +198,14 @@ func (c *MockClient) PatchGuestNetworkInterfaceByID(params *ops.PatchGuestNetwor
 	return nil, nil
 }
 
+func (c *MockClient) PatchGuestPmemByID(params *ops.PatchGuestPmemByIDParams) (*ops.PatchGuestPmemByIDNoContent, error) {
+	if c.PatchGuestPmemByIDFn != nil {
+		return c.PatchGuestPmemByIDFn(params)
+	}
+
+	return nil, nil
+}
+
 func (c *MockClient) PatchMachineConfiguration(params *ops.PatchMachineConfigurationParams) (*ops.PatchMachineConfigurationNoContent, error) {
 	if c.PatchMachineConfigurationFn != nil {
 		return c.PatchMachineConfigurationFn(params)
@@ -230,6 +249,14 @@ func (c *MockClient) PutBalloon(params *ops.PutBalloonParams) (*ops.PutBalloonNo
 func (c *MockClient) PutCPUConfiguration(params *ops.PutCPUConfigurationParams) (*ops.PutCPUConfigurationNoContent, error) {
 	if c.PutCPUConfigurationFn != nil {
 		return c.PutCPUConfigurationFn(params)
+	}
+
+	return nil, nil
+}
+
+func (c *MockClient) PutEnclaveConfiguration(params *ops.PutEnclaveConfigurationParams) (*ops.PutEnclaveConfigurationNoContent, error) {
+	if c.PutEnclaveConfigurationFn != nil {
+		return c.PutEnclaveConfigurationFn(params)
 	}
 
 	return nil, nil
@@ -339,7 +366,7 @@ func (c *MockClient) PutSerialDevice(params *ops.PutSerialDeviceParams) (*ops.Pu
 	return nil, nil
 }
 
-func (c *MockClient) StartBalloonHinting(params *ops.StartBalloonHintingParams) (*ops.StartBalloonHintingOK, error) {
+func (c *MockClient) StartBalloonHinting(params *ops.StartBalloonHintingParams) (*ops.StartBalloonHintingNoContent, error) {
 	if c.StartBalloonHintingFn != nil {
 		return c.StartBalloonHintingFn(params)
 	}
@@ -347,7 +374,7 @@ func (c *MockClient) StartBalloonHinting(params *ops.StartBalloonHintingParams) 
 	return nil, nil
 }
 
-func (c *MockClient) StopBalloonHinting(params *ops.StopBalloonHintingParams) (*ops.StopBalloonHintingOK, error) {
+func (c *MockClient) StopBalloonHinting(params *ops.StopBalloonHintingParams) (*ops.StopBalloonHintingNoContent, error) {
 	if c.StopBalloonHintingFn != nil {
 		return c.StopBalloonHintingFn(params)
 	}

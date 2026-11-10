@@ -20,7 +20,9 @@ package models
 
 import (
 	"context"
+	stderrors "errors"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
@@ -30,17 +32,86 @@ import (
 // swagger:model SerialDevice
 type SerialDevice struct {
 
+	// Optional token bucket for rate limiting serial console output bandwidth. When present, guest writes to the serial port that exceed the configured rate are silently dropped and counted in the `uart.rate_limiter_dropped_bytes` metric. When absent (the default), serial output is not rate-limited.
+	RateLimiter *TokenBucket `json:"rate_limiter,omitempty"`
+
 	// Path to a file or named pipe on the host to which serial output should be written.
 	SerialOutPath string `json:"serial_out_path,omitempty"`
 }
 
 // Validate validates this serial device
 func (m *SerialDevice) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateRateLimiter(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
-// ContextValidate validates this serial device based on context it is used
+func (m *SerialDevice) validateRateLimiter(formats strfmt.Registry) error {
+	if swag.IsZero(m.RateLimiter) { // not required
+		return nil
+	}
+
+	if m.RateLimiter != nil {
+		if err := m.RateLimiter.Validate(formats); err != nil {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
+				return ve.ValidateName("rate_limiter")
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
+				return ce.ValidateName("rate_limiter")
+			}
+
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this serial device based on the context it is used
 func (m *SerialDevice) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateRateLimiter(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SerialDevice) contextValidateRateLimiter(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.RateLimiter != nil {
+
+		if swag.IsZero(m.RateLimiter) { // not required
+			return nil
+		}
+
+		if err := m.RateLimiter.ContextValidate(ctx, formats); err != nil {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
+				return ve.ValidateName("rate_limiter")
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
+				return ce.ValidateName("rate_limiter")
+			}
+
+			return err
+		}
+	}
+
 	return nil
 }
 

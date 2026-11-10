@@ -512,7 +512,7 @@ func (f *Client) PatchBalloonStatsInterval(ctx context.Context, balloonStatsUpda
 type StartBalloonHintingOpt func(*ops.StartBalloonHintingParams)
 
 // StartBalloonHinting starts a free page hinting run on the balloon device.
-func (f *Client) StartBalloonHinting(ctx context.Context, cmd *models.BalloonStartCmd, opts ...StartBalloonHintingOpt) (*ops.StartBalloonHintingOK, error) {
+func (f *Client) StartBalloonHinting(ctx context.Context, cmd *models.BalloonStartCmd, opts ...StartBalloonHintingOpt) (*ops.StartBalloonHintingNoContent, error) {
 	timeout, cancel := context.WithTimeout(ctx, time.Duration(f.firecrackerRequestTimeout)*time.Millisecond)
 	defer cancel()
 
@@ -529,7 +529,7 @@ func (f *Client) StartBalloonHinting(ctx context.Context, cmd *models.BalloonSta
 type StopBalloonHintingOpt func(*ops.StopBalloonHintingParams)
 
 // StopBalloonHinting stops a free page hinting run on the balloon device.
-func (f *Client) StopBalloonHinting(ctx context.Context, opts ...StopBalloonHintingOpt) (*ops.StopBalloonHintingOK, error) {
+func (f *Client) StopBalloonHinting(ctx context.Context, opts ...StopBalloonHintingOpt) (*ops.StopBalloonHintingNoContent, error) {
 	timeout, cancel := context.WithTimeout(ctx, time.Duration(f.firecrackerRequestTimeout)*time.Millisecond)
 	defer cancel()
 

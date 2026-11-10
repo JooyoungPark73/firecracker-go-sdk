@@ -38,8 +38,8 @@ type StartBalloonHintingReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *StartBalloonHintingReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (any, error) {
 	switch response.Code() {
-	case 200:
-		result := NewStartBalloonHintingOK()
+	case 204:
+		result := NewStartBalloonHintingNoContent()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -62,58 +62,58 @@ func (o *StartBalloonHintingReader) ReadResponse(response runtime.ClientResponse
 	}
 }
 
-// NewStartBalloonHintingOK creates a StartBalloonHintingOK with default headers values
-func NewStartBalloonHintingOK() *StartBalloonHintingOK {
-	return &StartBalloonHintingOK{}
+// NewStartBalloonHintingNoContent creates a StartBalloonHintingNoContent with default headers values
+func NewStartBalloonHintingNoContent() *StartBalloonHintingNoContent {
+	return &StartBalloonHintingNoContent{}
 }
 
 /*
-StartBalloonHintingOK describes a response with status code 200, with default header values.
+StartBalloonHintingNoContent describes a response with status code 204, with default header values.
 
 Free page hinting run started.
 */
-type StartBalloonHintingOK struct {
+type StartBalloonHintingNoContent struct {
 }
 
-// IsSuccess returns true when this start balloon hinting o k response has a 2xx status code
-func (o *StartBalloonHintingOK) IsSuccess() bool {
+// IsSuccess returns true when this start balloon hinting no content response has a 2xx status code
+func (o *StartBalloonHintingNoContent) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this start balloon hinting o k response has a 3xx status code
-func (o *StartBalloonHintingOK) IsRedirect() bool {
+// IsRedirect returns true when this start balloon hinting no content response has a 3xx status code
+func (o *StartBalloonHintingNoContent) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this start balloon hinting o k response has a 4xx status code
-func (o *StartBalloonHintingOK) IsClientError() bool {
+// IsClientError returns true when this start balloon hinting no content response has a 4xx status code
+func (o *StartBalloonHintingNoContent) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this start balloon hinting o k response has a 5xx status code
-func (o *StartBalloonHintingOK) IsServerError() bool {
+// IsServerError returns true when this start balloon hinting no content response has a 5xx status code
+func (o *StartBalloonHintingNoContent) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this start balloon hinting o k response a status code equal to that given
-func (o *StartBalloonHintingOK) IsCode(code int) bool {
-	return code == 200
+// IsCode returns true when this start balloon hinting no content response a status code equal to that given
+func (o *StartBalloonHintingNoContent) IsCode(code int) bool {
+	return code == 204
 }
 
-// Code gets the status code for the start balloon hinting o k response
-func (o *StartBalloonHintingOK) Code() int {
-	return 200
+// Code gets the status code for the start balloon hinting no content response
+func (o *StartBalloonHintingNoContent) Code() int {
+	return 204
 }
 
-func (o *StartBalloonHintingOK) Error() string {
-	return fmt.Sprintf("[PATCH /balloon/hinting/start][%d] startBalloonHintingOK", 200)
+func (o *StartBalloonHintingNoContent) Error() string {
+	return fmt.Sprintf("[PATCH /balloon/hinting/start][%d] startBalloonHintingNoContent", 204)
 }
 
-func (o *StartBalloonHintingOK) String() string {
-	return fmt.Sprintf("[PATCH /balloon/hinting/start][%d] startBalloonHintingOK", 200)
+func (o *StartBalloonHintingNoContent) String() string {
+	return fmt.Sprintf("[PATCH /balloon/hinting/start][%d] startBalloonHintingNoContent", 204)
 }
 
-func (o *StartBalloonHintingOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+func (o *StartBalloonHintingNoContent) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	return nil
 }

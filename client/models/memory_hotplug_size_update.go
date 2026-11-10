@@ -21,8 +21,10 @@ package models
 import (
 	"context"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // MemoryHotplugSizeUpdate An update to the size of the hotpluggable memory region.
@@ -31,11 +33,38 @@ import (
 type MemoryHotplugSizeUpdate struct {
 
 	// New target region size.
-	RequestedSizeMib int64 `json:"requested_size_mib,omitempty"`
+	// Maximum: 4.294967295e+09
+	// Minimum: 0
+	RequestedSizeMib *int64 `json:"requested_size_mib,omitempty"`
 }
 
 // Validate validates this memory hotplug size update
 func (m *MemoryHotplugSizeUpdate) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateRequestedSizeMib(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *MemoryHotplugSizeUpdate) validateRequestedSizeMib(formats strfmt.Registry) error {
+	if swag.IsZero(m.RequestedSizeMib) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("requested_size_mib", "body", *m.RequestedSizeMib, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("requested_size_mib", "body", *m.RequestedSizeMib, 4.294967295e+09, false); err != nil {
+		return err
+	}
+
 	return nil
 }
 

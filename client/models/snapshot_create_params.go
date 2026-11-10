@@ -44,6 +44,9 @@ type SnapshotCreateParams struct {
 	// Type of snapshot to create. It is optional and by default, a full snapshot is created.
 	// Enum: ["Full","Diff"]
 	SnapshotType string `json:"snapshot_type,omitempty"`
+
+	// Whether the snapshot state and guest memory files are synced to disk (fsync) before the request returns. Optional, defaults to true, guaranteeing durability across host crashes. Setting it to false returns without waiting for the writeback, making snapshot creation faster at the cost of durability across a host crash; the data stays in the host page cache, so same-host reads still see the full contents. Block device backing files are always fsync'd regardless of this setting.
+	SyncSnapshotFiles *bool `json:"sync_snapshot_files,omitempty"`
 }
 
 // Validate validates this snapshot create params

@@ -1227,7 +1227,7 @@ func (m *Machine) loadSnapshot(ctx context.Context, snapshot *SnapshotConfig) er
 	}
 
 	if _, err := m.client.LoadSnapshot(ctx, snapshotParams); err != nil {
-		return fmt.Errorf("failed to load a snapshot for VM: %v", err)
+		return fmt.Errorf("failed to load a snapshot for VM: %w", err)
 	}
 
 	m.logger.Debug("snapshot loaded successfully")
@@ -1399,7 +1399,7 @@ func (m *Machine) ConfigureMemoryHotplug(ctx context.Context, config *models.Mem
 // UpdateMemoryHotplug updates the size of the hotpluggable memory region.
 func (m *Machine) UpdateMemoryHotplug(ctx context.Context, requestedSizeMib int64, opts ...PatchMemoryHotplugOpt) error {
 	update := models.MemoryHotplugSizeUpdate{
-		RequestedSizeMib: requestedSizeMib,
+		RequestedSizeMib: Int64(requestedSizeMib),
 	}
 
 	if _, err := m.client.PatchMemoryHotplug(ctx, &update, opts...); err != nil {

@@ -216,6 +216,36 @@ func (a *Client) DescribeInstance(params *DescribeInstanceParams) (*DescribeInst
 }
 
 /*
+GetEnclaveConfiguration gets the nitro enclave VM configuration
+
+Returns the VM's enclave-specific configuration options.
+*/
+func (a *Client) GetEnclaveConfiguration(params *GetEnclaveConfigurationParams) (*GetEnclaveConfigurationOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetEnclaveConfigurationParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "getEnclaveConfiguration",
+		Method:             "GET",
+		PathPattern:        "/enclave",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetEnclaveConfigurationReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetEnclaveConfigurationOK), nil
+
+}
+
+/*
 GetExportVMConfig gets the full VM configuration
 
 Gets configuration for all VM resources. If the VM is restored from a snapshot, the boot-source, machine-config.smt and machine-config.cpu_template will be empty.
@@ -512,6 +542,36 @@ func (a *Client) PatchGuestNetworkInterfaceByID(params *PatchGuestNetworkInterfa
 }
 
 /*
+PatchGuestPmemByID updates the rate limiter of a pmem device post boot only
+
+Updates the rate limiter applied to the pmem device with the ID specified by the id path parameter.
+*/
+func (a *Client) PatchGuestPmemByID(params *PatchGuestPmemByIDParams) (*PatchGuestPmemByIDNoContent, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPatchGuestPmemByIDParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "patchGuestPmemByID",
+		Method:             "PATCH",
+		PathPattern:        "/pmem/{id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PatchGuestPmemByIDReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PatchGuestPmemByIDNoContent), nil
+
+}
+
+/*
 PatchMachineConfiguration partiallies updates the machine configuration of the VM pre boot only
 
 Partially updates the Virtual Machine Configuration with the specified input. If any of the parameters has an incorrect value, the whole update fails.
@@ -686,6 +746,36 @@ func (a *Client) PutCPUConfiguration(params *PutCPUConfigurationParams) (*PutCPU
 		return nil, err
 	}
 	return result.(*PutCPUConfigurationNoContent), nil
+
+}
+
+/*
+PutEnclaveConfiguration configures the nitro enclave options pre boot only
+
+Configures Firecracker to launch a Nitro Enclave backed guest. Omitted properties use their documented defaults. This operation fails after the guest has started or when the configuration is invalid.
+*/
+func (a *Client) PutEnclaveConfiguration(params *PutEnclaveConfigurationParams) (*PutEnclaveConfigurationNoContent, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPutEnclaveConfigurationParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "putEnclaveConfiguration",
+		Method:             "PUT",
+		PathPattern:        "/enclave",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PutEnclaveConfigurationReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PutEnclaveConfigurationNoContent), nil
 
 }
 
@@ -900,7 +990,7 @@ func (a *Client) PutLogger(params *PutLoggerParams) (*PutLoggerNoContent, error)
 /*
 PutMachineConfiguration updates the machine configuration of the VM pre boot only
 
-Updates the Virtual Machine Configuration with the specified input. Firecracker starts with default values for vCPU count (=1) and memory size (=128 MiB). The vCPU count is restricted to the [1, 32] range. With SMT enabled, the vCPU count is required to be either 1 or an even number in the range. otherwise there are no restrictions regarding the vCPU count. If 2M hugetlbfs pages are specified, then `mem_size_mib` must be a multiple of 2. If any of the parameters has an incorrect value, the whole update fails. All parameters that are optional and are not specified are set to their default values (smt = false, track_dirty_pages = false, cpu_template = None, huge_pages = None).
+Updates the Virtual Machine Configuration with the specified input. Firecracker starts with default values for vCPU count (=1) and memory size (=128 MiB). A KVM microVM supports at most 32 vCPUs. A Nitro Enclave VM's maximum depends on the underlying hardware, up to an arbitrary hard cap of 1024. The vCPU count is validated against the limit for the VM being started when the VM is started rather than at configuration time, so a count above it is rejected then. A vCPU count of zero, or an odd count with SMT enabled, is still rejected at configuration time. With SMT enabled, the vCPU count is required to be either 1 or an even number; otherwise there are no restrictions regarding the vCPU count. If 2M hugetlbfs pages are specified, then `mem_size_mib` must be a multiple of 2. If any of the parameters has an incorrect value, the whole update fails. All parameters that are optional and are not specified are set to their default values (smt = false, track_dirty_pages = false, cpu_template = None, huge_pages = None).
 */
 func (a *Client) PutMachineConfiguration(params *PutMachineConfigurationParams) (*PutMachineConfigurationNoContent, error) {
 	// TODO: Validate the params before sending
@@ -1076,7 +1166,7 @@ func (a *Client) PutSerialDevice(params *PutSerialDeviceParams) (*PutSerialDevic
 /*
 StartBalloonHinting starts a free page hinting run only if enabled pre boot
 */
-func (a *Client) StartBalloonHinting(params *StartBalloonHintingParams) (*StartBalloonHintingOK, error) {
+func (a *Client) StartBalloonHinting(params *StartBalloonHintingParams) (*StartBalloonHintingNoContent, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewStartBalloonHintingParams()
@@ -1097,14 +1187,14 @@ func (a *Client) StartBalloonHinting(params *StartBalloonHintingParams) (*StartB
 	if err != nil {
 		return nil, err
 	}
-	return result.(*StartBalloonHintingOK), nil
+	return result.(*StartBalloonHintingNoContent), nil
 
 }
 
 /*
 StopBalloonHinting stops a free page hinting run only if enabled pre boot
 */
-func (a *Client) StopBalloonHinting(params *StopBalloonHintingParams) (*StopBalloonHintingOK, error) {
+func (a *Client) StopBalloonHinting(params *StopBalloonHintingParams) (*StopBalloonHintingNoContent, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewStopBalloonHintingParams()
@@ -1125,7 +1215,7 @@ func (a *Client) StopBalloonHinting(params *StopBalloonHintingParams) (*StopBall
 	if err != nil {
 		return nil, err
 	}
-	return result.(*StopBalloonHintingOK), nil
+	return result.(*StopBalloonHintingNoContent), nil
 
 }
 
@@ -1143,6 +1233,7 @@ type ClientIface interface {
 	DescribeBalloonHinting(params *DescribeBalloonHintingParams) (*DescribeBalloonHintingOK, error)
 	DescribeBalloonStats(params *DescribeBalloonStatsParams) (*DescribeBalloonStatsOK, error)
 	DescribeInstance(params *DescribeInstanceParams) (*DescribeInstanceOK, error)
+	GetEnclaveConfiguration(params *GetEnclaveConfigurationParams) (*GetEnclaveConfigurationOK, error)
 	GetExportVMConfig(params *GetExportVMConfigParams) (*GetExportVMConfigOK, error)
 	GetFirecrackerVersion(params *GetFirecrackerVersionParams) (*GetFirecrackerVersionOK, error)
 	GetMachineConfiguration(params *GetMachineConfigurationParams) (*GetMachineConfigurationOK, error)
@@ -1153,12 +1244,14 @@ type ClientIface interface {
 	PatchBalloonStatsInterval(params *PatchBalloonStatsIntervalParams) (*PatchBalloonStatsIntervalNoContent, error)
 	PatchGuestDriveByID(params *PatchGuestDriveByIDParams) (*PatchGuestDriveByIDNoContent, error)
 	PatchGuestNetworkInterfaceByID(params *PatchGuestNetworkInterfaceByIDParams) (*PatchGuestNetworkInterfaceByIDNoContent, error)
+	PatchGuestPmemByID(params *PatchGuestPmemByIDParams) (*PatchGuestPmemByIDNoContent, error)
 	PatchMachineConfiguration(params *PatchMachineConfigurationParams) (*PatchMachineConfigurationNoContent, error)
 	PatchMemoryHotplug(params *PatchMemoryHotplugParams) (*PatchMemoryHotplugNoContent, error)
 	PatchMmds(params *PatchMmdsParams) (*PatchMmdsNoContent, error)
 	PatchVM(params *PatchVMParams) (*PatchVMNoContent, error)
 	PutBalloon(params *PutBalloonParams) (*PutBalloonNoContent, error)
 	PutCPUConfiguration(params *PutCPUConfigurationParams) (*PutCPUConfigurationNoContent, error)
+	PutEnclaveConfiguration(params *PutEnclaveConfigurationParams) (*PutEnclaveConfigurationNoContent, error)
 	PutEntropyDevice(params *PutEntropyDeviceParams) (*PutEntropyDeviceNoContent, error)
 	PutGuestBootSource(params *PutGuestBootSourceParams) (*PutGuestBootSourceNoContent, error)
 	PutGuestDriveByID(params *PutGuestDriveByIDParams) (*PutGuestDriveByIDNoContent, error)
@@ -1172,6 +1265,6 @@ type ClientIface interface {
 	PutMmds(params *PutMmdsParams) (*PutMmdsNoContent, error)
 	PutMmdsConfig(params *PutMmdsConfigParams) (*PutMmdsConfigNoContent, error)
 	PutSerialDevice(params *PutSerialDeviceParams) (*PutSerialDeviceNoContent, error)
-	StartBalloonHinting(params *StartBalloonHintingParams) (*StartBalloonHintingOK, error)
-	StopBalloonHinting(params *StopBalloonHintingParams) (*StopBalloonHintingOK, error)
+	StartBalloonHinting(params *StartBalloonHintingParams) (*StartBalloonHintingNoContent, error)
+	StopBalloonHinting(params *StopBalloonHintingParams) (*StopBalloonHintingNoContent, error)
 }

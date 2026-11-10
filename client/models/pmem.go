@@ -20,6 +20,7 @@ package models
 
 import (
 	"context"
+	stderrors "errors"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -40,6 +41,9 @@ type Pmem struct {
 	// Required: true
 	PathOnHost *string `json:"path_on_host"`
 
+	// rate limiter
+	RateLimiter *RateLimiter `json:"rate_limiter,omitempty"`
+
 	// Flag to map backing file in read-only mode.
 	ReadOnly bool `json:"read_only,omitempty"`
 
@@ -56,6 +60,10 @@ func (m *Pmem) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validatePathOnHost(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateRateLimiter(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -83,8 +91,65 @@ func (m *Pmem) validatePathOnHost(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this pmem based on context it is used
+func (m *Pmem) validateRateLimiter(formats strfmt.Registry) error {
+	if swag.IsZero(m.RateLimiter) { // not required
+		return nil
+	}
+
+	if m.RateLimiter != nil {
+		if err := m.RateLimiter.Validate(formats); err != nil {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
+				return ve.ValidateName("rate_limiter")
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
+				return ce.ValidateName("rate_limiter")
+			}
+
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this pmem based on the context it is used
 func (m *Pmem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateRateLimiter(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Pmem) contextValidateRateLimiter(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.RateLimiter != nil {
+
+		if swag.IsZero(m.RateLimiter) { // not required
+			return nil
+		}
+
+		if err := m.RateLimiter.ContextValidate(ctx, formats); err != nil {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
+				return ve.ValidateName("rate_limiter")
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
+				return ce.ValidateName("rate_limiter")
+			}
+
+			return err
+		}
+	}
+
 	return nil
 }
 

@@ -34,9 +34,18 @@ import (
 // swagger:model Drive
 type Drive struct {
 
+	// Logical block size advertised to the guest via VIRTIO_BLK_F_BLK_SIZE. This field is optional for virtio-block config and should be omitted for vhost-user-block configuration.
+	BlkSize *int64 `json:"blk_size,omitempty"`
+
 	// Represents the caching strategy for the block device.
 	// Enum: ["Unsafe","Writeback"]
 	CacheType *string `json:"cache_type,omitempty"`
+
+	// Enables virtio-blk discard support. When enabled, the guest can issue discard/TRIM requests for this drive. Only supported for writable virtio-block devices using the Sync IO engine. This field is optional for virtio-block config and should be omitted for vhost-user-block configuration.
+	Discard *bool `json:"discard,omitempty"`
+
+	// dmb size mib
+	DmbSizeMib DmbSizeMib `json:"dmb_size_mib,omitempty"`
 
 	// drive id
 	// Required: true
@@ -64,6 +73,9 @@ type Drive struct {
 
 	// Path to the socket of vhost-user-block backend. This field is required for vhost-user-block config should be omitted for virtio-block configuration.
 	Socket string `json:"socket,omitempty"`
+
+	// topology
+	Topology *BlockTopology `json:"topology,omitempty"`
 }
 
 // Validate validates this drive
@@ -71,6 +83,10 @@ func (m *Drive) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCacheType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDmbSizeMib(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -87,6 +103,10 @@ func (m *Drive) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRateLimiter(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTopology(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -132,6 +152,27 @@ func (m *Drive) validateCacheType(formats strfmt.Registry) error {
 
 	// value enum
 	if err := m.validateCacheTypeEnum("cache_type", "body", *m.CacheType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Drive) validateDmbSizeMib(formats strfmt.Registry) error {
+	if swag.IsZero(m.DmbSizeMib) { // not required
+		return nil
+	}
+
+	if err := m.DmbSizeMib.Validate(formats); err != nil {
+		ve := new(errors.Validation)
+		if stderrors.As(err, &ve) {
+			return ve.ValidateName("dmb_size_mib")
+		}
+		ce := new(errors.CompositeError)
+		if stderrors.As(err, &ce) {
+			return ce.ValidateName("dmb_size_mib")
+		}
+
 		return err
 	}
 
@@ -221,17 +262,70 @@ func (m *Drive) validateRateLimiter(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Drive) validateTopology(formats strfmt.Registry) error {
+	if swag.IsZero(m.Topology) { // not required
+		return nil
+	}
+
+	if m.Topology != nil {
+		if err := m.Topology.Validate(formats); err != nil {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
+				return ve.ValidateName("topology")
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
+				return ce.ValidateName("topology")
+			}
+
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this drive based on the context it is used
 func (m *Drive) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateDmbSizeMib(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateRateLimiter(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTopology(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *Drive) contextValidateDmbSizeMib(ctx context.Context, formats strfmt.Registry) error {
+
+	if swag.IsZero(m.DmbSizeMib) { // not required
+		return nil
+	}
+
+	if err := m.DmbSizeMib.ContextValidate(ctx, formats); err != nil {
+		ve := new(errors.Validation)
+		if stderrors.As(err, &ve) {
+			return ve.ValidateName("dmb_size_mib")
+		}
+		ce := new(errors.CompositeError)
+		if stderrors.As(err, &ce) {
+			return ce.ValidateName("dmb_size_mib")
+		}
+
+		return err
+	}
+
 	return nil
 }
 
@@ -251,6 +345,31 @@ func (m *Drive) contextValidateRateLimiter(ctx context.Context, formats strfmt.R
 			ce := new(errors.CompositeError)
 			if stderrors.As(err, &ce) {
 				return ce.ValidateName("rate_limiter")
+			}
+
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Drive) contextValidateTopology(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Topology != nil {
+
+		if swag.IsZero(m.Topology) { // not required
+			return nil
+		}
+
+		if err := m.Topology.ContextValidate(ctx, formats); err != nil {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
+				return ve.ValidateName("topology")
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
+				return ce.ValidateName("topology")
 			}
 
 			return err

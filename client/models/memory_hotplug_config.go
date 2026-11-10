@@ -33,14 +33,17 @@ import (
 type MemoryHotplugConfig struct {
 
 	// (Logical) Block size for the hotpluggable memory in MiB. This will determine the logical granularity of hot-plug memory for the guest. Refer to the device documentation on how to tune this value.
+	// Maximum: 4.294967295e+09
 	// Minimum: 2
 	BlockSizeMib int64 `json:"block_size_mib,omitempty"`
 
 	// Slot size for the hotpluggable memory in MiB. This will determine the granularity of hot-plug memory from the host. Refer to the device documentation on how to tune this value.
+	// Maximum: 4.294967295e+09
 	// Minimum: 128
 	SlotSizeMib int64 `json:"slot_size_mib,omitempty"`
 
 	// Total size of the hotpluggable memory in MiB.
+	// Maximum: 4.294967295e+09
 	TotalSizeMib int64 `json:"total_size_mib,omitempty"`
 }
 
@@ -53,6 +56,10 @@ func (m *MemoryHotplugConfig) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSlotSizeMib(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTotalSizeMib(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -71,6 +78,10 @@ func (m *MemoryHotplugConfig) validateBlockSizeMib(formats strfmt.Registry) erro
 		return err
 	}
 
+	if err := validate.MaximumInt("block_size_mib", "body", m.BlockSizeMib, 4.294967295e+09, false); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -80,6 +91,22 @@ func (m *MemoryHotplugConfig) validateSlotSizeMib(formats strfmt.Registry) error
 	}
 
 	if err := validate.MinimumInt("slot_size_mib", "body", m.SlotSizeMib, 128, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("slot_size_mib", "body", m.SlotSizeMib, 4.294967295e+09, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MemoryHotplugConfig) validateTotalSizeMib(formats strfmt.Registry) error {
+	if swag.IsZero(m.TotalSizeMib) { // not required
+		return nil
+	}
+
+	if err := validate.MaximumInt("total_size_mib", "body", m.TotalSizeMib, 4.294967295e+09, false); err != nil {
 		return err
 	}
 

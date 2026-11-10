@@ -45,6 +45,9 @@ type FullVMConfiguration struct {
 	// Configurations for all block devices.
 	Drives []*Drive `json:"drives"`
 
+	// enclave
+	Enclave *EnclaveConfig `json:"enclave,omitempty"`
+
 	// entropy
 	Entropy *EntropyDevice `json:"entropy,omitempty"`
 
@@ -90,6 +93,10 @@ func (m *FullVMConfiguration) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateDrives(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateEnclave(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -229,6 +236,29 @@ func (m *FullVMConfiguration) validateDrives(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *FullVMConfiguration) validateEnclave(formats strfmt.Registry) error {
+	if swag.IsZero(m.Enclave) { // not required
+		return nil
+	}
+
+	if m.Enclave != nil {
+		if err := m.Enclave.Validate(formats); err != nil {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
+				return ve.ValidateName("enclave")
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
+				return ce.ValidateName("enclave")
+			}
+
+			return err
+		}
 	}
 
 	return nil
@@ -475,6 +505,10 @@ func (m *FullVMConfiguration) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateEnclave(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateEntropy(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -616,6 +650,31 @@ func (m *FullVMConfiguration) contextValidateDrives(ctx context.Context, formats
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *FullVMConfiguration) contextValidateEnclave(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Enclave != nil {
+
+		if swag.IsZero(m.Enclave) { // not required
+			return nil
+		}
+
+		if err := m.Enclave.ContextValidate(ctx, formats); err != nil {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
+				return ve.ValidateName("enclave")
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
+				return ce.ValidateName("enclave")
+			}
+
+			return err
+		}
 	}
 
 	return nil

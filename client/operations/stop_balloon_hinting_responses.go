@@ -38,8 +38,8 @@ type StopBalloonHintingReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *StopBalloonHintingReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (any, error) {
 	switch response.Code() {
-	case 200:
-		result := NewStopBalloonHintingOK()
+	case 204:
+		result := NewStopBalloonHintingNoContent()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -62,58 +62,58 @@ func (o *StopBalloonHintingReader) ReadResponse(response runtime.ClientResponse,
 	}
 }
 
-// NewStopBalloonHintingOK creates a StopBalloonHintingOK with default headers values
-func NewStopBalloonHintingOK() *StopBalloonHintingOK {
-	return &StopBalloonHintingOK{}
+// NewStopBalloonHintingNoContent creates a StopBalloonHintingNoContent with default headers values
+func NewStopBalloonHintingNoContent() *StopBalloonHintingNoContent {
+	return &StopBalloonHintingNoContent{}
 }
 
 /*
-StopBalloonHintingOK describes a response with status code 200, with default header values.
+StopBalloonHintingNoContent describes a response with status code 204, with default header values.
 
 Free page hinting run stopped.
 */
-type StopBalloonHintingOK struct {
+type StopBalloonHintingNoContent struct {
 }
 
-// IsSuccess returns true when this stop balloon hinting o k response has a 2xx status code
-func (o *StopBalloonHintingOK) IsSuccess() bool {
+// IsSuccess returns true when this stop balloon hinting no content response has a 2xx status code
+func (o *StopBalloonHintingNoContent) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this stop balloon hinting o k response has a 3xx status code
-func (o *StopBalloonHintingOK) IsRedirect() bool {
+// IsRedirect returns true when this stop balloon hinting no content response has a 3xx status code
+func (o *StopBalloonHintingNoContent) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this stop balloon hinting o k response has a 4xx status code
-func (o *StopBalloonHintingOK) IsClientError() bool {
+// IsClientError returns true when this stop balloon hinting no content response has a 4xx status code
+func (o *StopBalloonHintingNoContent) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this stop balloon hinting o k response has a 5xx status code
-func (o *StopBalloonHintingOK) IsServerError() bool {
+// IsServerError returns true when this stop balloon hinting no content response has a 5xx status code
+func (o *StopBalloonHintingNoContent) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this stop balloon hinting o k response a status code equal to that given
-func (o *StopBalloonHintingOK) IsCode(code int) bool {
-	return code == 200
+// IsCode returns true when this stop balloon hinting no content response a status code equal to that given
+func (o *StopBalloonHintingNoContent) IsCode(code int) bool {
+	return code == 204
 }
 
-// Code gets the status code for the stop balloon hinting o k response
-func (o *StopBalloonHintingOK) Code() int {
-	return 200
+// Code gets the status code for the stop balloon hinting no content response
+func (o *StopBalloonHintingNoContent) Code() int {
+	return 204
 }
 
-func (o *StopBalloonHintingOK) Error() string {
-	return fmt.Sprintf("[PATCH /balloon/hinting/stop][%d] stopBalloonHintingOK", 200)
+func (o *StopBalloonHintingNoContent) Error() string {
+	return fmt.Sprintf("[PATCH /balloon/hinting/stop][%d] stopBalloonHintingNoContent", 204)
 }
 
-func (o *StopBalloonHintingOK) String() string {
-	return fmt.Sprintf("[PATCH /balloon/hinting/stop][%d] stopBalloonHintingOK", 200)
+func (o *StopBalloonHintingNoContent) String() string {
+	return fmt.Sprintf("[PATCH /balloon/hinting/stop][%d] stopBalloonHintingNoContent", 204)
 }
 
-func (o *StopBalloonHintingOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+func (o *StopBalloonHintingNoContent) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	return nil
 }

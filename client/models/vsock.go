@@ -20,6 +20,7 @@ package models
 
 import (
 	"context"
+	stderrors "errors"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -31,6 +32,9 @@ import (
 //
 // swagger:model Vsock
 type Vsock struct {
+
+	// dmb size mib
+	DmbSizeMib DmbSizeMib `json:"dmb_size_mib,omitempty"`
 
 	// Guest Vsock CID
 	// Required: true
@@ -49,6 +53,10 @@ type Vsock struct {
 func (m *Vsock) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateDmbSizeMib(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateGuestCid(formats); err != nil {
 		res = append(res, err)
 	}
@@ -60,6 +68,27 @@ func (m *Vsock) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *Vsock) validateDmbSizeMib(formats strfmt.Registry) error {
+	if swag.IsZero(m.DmbSizeMib) { // not required
+		return nil
+	}
+
+	if err := m.DmbSizeMib.Validate(formats); err != nil {
+		ve := new(errors.Validation)
+		if stderrors.As(err, &ve) {
+			return ve.ValidateName("dmb_size_mib")
+		}
+		ce := new(errors.CompositeError)
+		if stderrors.As(err, &ce) {
+			return ce.ValidateName("dmb_size_mib")
+		}
+
+		return err
+	}
+
 	return nil
 }
 
@@ -85,8 +114,39 @@ func (m *Vsock) validateUdsPath(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this vsock based on context it is used
+// ContextValidate validate this vsock based on the context it is used
 func (m *Vsock) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDmbSizeMib(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Vsock) contextValidateDmbSizeMib(ctx context.Context, formats strfmt.Registry) error {
+
+	if swag.IsZero(m.DmbSizeMib) { // not required
+		return nil
+	}
+
+	if err := m.DmbSizeMib.ContextValidate(ctx, formats); err != nil {
+		ve := new(errors.Validation)
+		if stderrors.As(err, &ve) {
+			return ve.ValidateName("dmb_size_mib")
+		}
+		ce := new(errors.CompositeError)
+		if stderrors.As(err, &ce) {
+			return ce.ValidateName("dmb_size_mib")
+		}
+
+		return err
+	}
+
 	return nil
 }
 
