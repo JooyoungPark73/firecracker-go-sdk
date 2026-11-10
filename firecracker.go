@@ -294,6 +294,14 @@ func (f *Client) LoadSnapshot(ctx context.Context, snapshotParams *models.Snapsh
 	for _, opt := range opts {
 		opt(params)
 	}
+	// The release schema permits omission, but its generated model emits a nil
+	// slice as JSON null. Firecracker expects a sequence, including when empty.
+	// Copy the body so normalizing the wire representation does not mutate callers.
+	if params.Body != nil && params.Body.NetworkOverrides == nil {
+		body := *params.Body
+		body.NetworkOverrides = []*models.NetworkOverride{}
+		params.SetBody(&body)
+	}
 
 	return f.client.Operations.LoadSnapshot(params)
 }

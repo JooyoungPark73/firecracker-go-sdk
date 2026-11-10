@@ -41,7 +41,24 @@ not claim to validate guest reclamation or snapshot consistency.
 
 `make all-tests` additionally prepares an Ubuntu 24.04 ext4 SSH fixture, with
 locally generated test-only credentials, and CNI **v1.9.1** and
-`tc-redirect-tap` **v0.0.0-20250516183331-34bf829e9a5c**. The complete privileged
-SDK suite, including SSH/network/jailer/snapshot tests, still needs validation
-as part of runtime integration. Passing the checks above is not completion of
-the `firecracker-containerd` modernization milestone.
+`tc-redirect-tap` **v0.0.0-20250516183331-34bf829e9a5c**. Generated SSH credentials
+and large disk fixtures are ignored by Git; an external `FC_TEST_DATA_PATH` is
+recommended for worker testing.
+
+The complete privileged suite now passes on the worker, including native jailer,
+balloon updates, CNI/networking, snapshot creation, file memory-backend restore,
+and restore checked through SSH. The existing `TestLogAndMetrics` remains skipped
+by its own test code. These tests use the verified v1.18.0 release binaries and the
+pinned fixture inputs. The container-based test runner uses `--network=none` to
+isolate test networking and `--cgroupns=host` so the native jailer can create cgroup
+v2 cpusets; its test cgroup must be absent before the run and removed afterward.
+
+The snapshot wrapper normalizes a nil network-override list to an empty JSON
+sequence without changing the caller's model. A nil list emitted by the generated
+model was rejected by the real VMM. `TestReleaseAPI` now covers that regression as
+well. The kernel fixture's boot arguments no longer disable APIC, which prevented
+virtio activation with the 6.18 kernel.
+
+The runtime repository records the full privileged runner command and worker
+logs. Passing this SDK suite does not establish runtime-level snapshot storage
+consistency or complete the firecracker-containerd modernization milestone.

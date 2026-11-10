@@ -39,7 +39,7 @@ testdata_objects = \
 $(FC_TEST_DATA_PATH)/firecracker \
 $(FC_TEST_BIN_PATH)/host-local \
 $(FC_TEST_DATA_PATH)/jailer \
-$(FC_TEST_DATA_PATH)/ltag \
+$(FC_TEST_BIN_PATH)/ltag \
 $(FC_TEST_BIN_PATH)/ptp \
 $(FC_TEST_DATA_PATH)/root-drive.img \
 $(FC_TEST_DATA_PATH)/root-drive-with-ssh.img \
@@ -109,8 +109,8 @@ $(FC_TEST_BIN_PATH)/static:
 $(FC_TEST_BIN_PATH)/tc-redirect-tap:
 	$(call install_go,github.com/awslabs/tc-redirect-tap/cmd/tc-redirect-tap,v0.0.0-20250516183331-34bf829e9a5c)
 
-$(FC_TEST_DATA_PATH)/ltag:
-	$(call install_go,github.com/kunalkushwaha/ltag,v0.2.3)
+$(FC_TEST_BIN_PATH)/ltag:
+	$(call install_go,github.com/kunalkushwaha/ltag,v0.2.5)
 
 # test-images builds the exact supported Firecracker release from source.
 .PHONY: test-images
@@ -131,7 +131,7 @@ firecracker-clean:
 	- rm $(FIRECRACKER_BIN) $(JAILER_BIN)
 
 lint: deps
-	gofmt -s -l .
-	$(FC_TEST_DATA_PATH)/bin/ltag -check -v -t .headers
+	test -z "$$(git ls-files '*.go' | xargs gofmt -s -l)"
+	$(FC_TEST_DATA_PATH)/bin/ltag -check -v -t .headers -excludes "build testdata"
 
 .PHONY: all generate clean distclean build test unit-tests all-tests check-kvm
