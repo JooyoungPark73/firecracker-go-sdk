@@ -1224,6 +1224,9 @@ func (m *Machine) loadSnapshot(ctx context.Context, snapshot *SnapshotConfig) er
 		SnapshotPath:        &snapshot.SnapshotPath,
 		EnableDiffSnapshots: snapshot.EnableDiffSnapshots,
 		ResumeVM:            snapshot.ResumeVM,
+		DriveOverrides:      snapshot.DriveOverrides,
+		NetworkOverrides:    snapshot.NetworkOverrides,
+		VsockOverride:       snapshot.VsockOverride,
 	}
 
 	if _, err := m.client.LoadSnapshot(ctx, snapshotParams); err != nil {

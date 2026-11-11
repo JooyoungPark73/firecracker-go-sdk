@@ -38,6 +38,9 @@ type SnapshotLoadParams struct {
 	// [x86_64 only] When set to true, passes KVM_CLOCK_REALTIME to KVM_SET_CLOCK on restore, advancing kvmclock by the wall-clock time elapsed since the snapshot was taken. When false (default), kvmclock resumes from where it was at snapshot time. This option may be extended to other clock sources and CPU architectures in the future.
 	ClockRealtime bool `json:"clock_realtime,omitempty"`
 
+	// Virtio block backing paths to replace before opening the saved drives.
+	DriveOverrides []*DriveOverride `json:"drive_overrides,omitempty"`
+
 	// (Deprecated) Enable dirty page tracking to improve space efficiency of diff snapshots
 	EnableDiffSnapshots bool `json:"enable_diff_snapshots,omitempty"`
 
@@ -72,6 +75,10 @@ type SnapshotLoadParams struct {
 func (m *SnapshotLoadParams) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateDriveOverrides(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateHugePages(formats); err != nil {
 		res = append(res, err)
 	}
@@ -95,6 +102,36 @@ func (m *SnapshotLoadParams) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *SnapshotLoadParams) validateDriveOverrides(formats strfmt.Registry) error {
+	if swag.IsZero(m.DriveOverrides) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.DriveOverrides); i++ {
+		if swag.IsZero(m.DriveOverrides[i]) { // not required
+			continue
+		}
+
+		if m.DriveOverrides[i] != nil {
+			if err := m.DriveOverrides[i].Validate(formats); err != nil {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
+					return ve.ValidateName("drive_overrides" + "." + strconv.Itoa(i))
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
+					return ce.ValidateName("drive_overrides" + "." + strconv.Itoa(i))
+				}
+
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -235,6 +272,10 @@ func (m *SnapshotLoadParams) validateVsockOverride(formats strfmt.Registry) erro
 func (m *SnapshotLoadParams) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateDriveOverrides(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateMemBackend(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -250,6 +291,35 @@ func (m *SnapshotLoadParams) ContextValidate(ctx context.Context, formats strfmt
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *SnapshotLoadParams) contextValidateDriveOverrides(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.DriveOverrides); i++ {
+
+		if m.DriveOverrides[i] != nil {
+
+			if swag.IsZero(m.DriveOverrides[i]) { // not required
+				return nil
+			}
+
+			if err := m.DriveOverrides[i].ContextValidate(ctx, formats); err != nil {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
+					return ve.ValidateName("drive_overrides" + "." + strconv.Itoa(i))
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
+					return ce.ValidateName("drive_overrides" + "." + strconv.Itoa(i))
+				}
+
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 

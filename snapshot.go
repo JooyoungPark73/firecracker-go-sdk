@@ -21,6 +21,9 @@ type SnapshotConfig struct {
 	SnapshotPath        string
 	EnableDiffSnapshots bool
 	ResumeVM            bool
+	DriveOverrides      []*models.DriveOverride
+	NetworkOverrides    []*models.NetworkOverride
+	VsockOverride       *models.VsockOverride
 }
 
 // GetMemBackendPath returns the effective memory backend path. If MemBackend

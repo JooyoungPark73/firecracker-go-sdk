@@ -361,6 +361,7 @@ var loadSnapshotRemoveHandlerList = []Handler{
 	CreateSerialHandler,
 	CreateMemoryHotplugHandler,
 	CreateNetworkInterfacesHandler,
+	AddVsocksHandler,
 	ConfigMmdsHandler,
 }
 
