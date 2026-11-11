@@ -37,6 +37,9 @@ type SnapshotCreateParams struct {
 	// Required: true
 	MemFilePath *string `json:"mem_file_path"`
 
+	// Preserve active vsock connections in the source VM when taking this snapshot. Backend connections are not captured. Load this snapshot with reset_vsock enabled so the restored guest drops stale connections.
+	RetainSourceVsock *bool `json:"retain_source_vsock,omitempty"`
+
 	// Path to the file that will contain the microVM state.
 	// Required: true
 	SnapshotPath *string `json:"snapshot_path"`

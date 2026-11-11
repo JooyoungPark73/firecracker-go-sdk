@@ -57,6 +57,9 @@ type SnapshotLoadParams struct {
 	// Network host device names to override
 	NetworkOverrides []*NetworkOverride `json:"network_overrides"`
 
+	// Publish a transport reset in an activated restored vsock device before the guest resumes. Required for snapshots made with retain_source_vsock. Existing listening sockets survive; established connections must reconnect.
+	ResetVsock *bool `json:"reset_vsock,omitempty"`
+
 	// When set to true, the vm is also resumed if the snapshot load is successful.
 	ResumeVM bool `json:"resume_vm,omitempty"`
 

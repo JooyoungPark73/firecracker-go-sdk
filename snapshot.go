@@ -21,6 +21,7 @@ type SnapshotConfig struct {
 	SnapshotPath        string
 	EnableDiffSnapshots bool
 	ResumeVM            bool
+	ResetVsock          bool
 	DriveOverrides      []*models.DriveOverride
 	NetworkOverrides    []*models.NetworkOverride
 	VsockOverride       *models.VsockOverride

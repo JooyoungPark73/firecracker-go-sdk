@@ -1798,7 +1798,7 @@ func TestSignalForwarding(t *testing.T) {
 	}
 	defer m.StopVMM()
 
-	sigChan := make(chan os.Signal)
+	sigChan := make(chan os.Signal, len(ignoredSignals))
 	signal.Notify(sigChan, ignoredSignals...)
 	defer func() {
 		signal.Stop(sigChan)

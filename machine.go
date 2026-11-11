@@ -1228,6 +1228,9 @@ func (m *Machine) loadSnapshot(ctx context.Context, snapshot *SnapshotConfig) er
 		NetworkOverrides:    snapshot.NetworkOverrides,
 		VsockOverride:       snapshot.VsockOverride,
 	}
+	if snapshot.ResetVsock {
+		snapshotParams.ResetVsock = Bool(true)
+	}
 
 	if _, err := m.client.LoadSnapshot(ctx, snapshotParams); err != nil {
 		return fmt.Errorf("failed to load a snapshot for VM: %w", err)

@@ -268,6 +268,16 @@ func (f *Client) PatchVM(ctx context.Context, vm *models.VM, opts ...PatchVMOpt)
 // CreateSnapshot API in setting any additional optional fields.
 type CreateSnapshotOpt func(*ops.CreateSnapshotParams)
 
+// WithRetainedSourceVsock keeps the source VM's established vsock connections
+// alive across snapshot creation. The matching Firecracker VMM must support
+// retain_source_vsock. Since backend connections are not part of the snapshot,
+// load the resulting snapshot with WithSnapshotVsockReset(true).
+func WithRetainedSourceVsock(retain bool) CreateSnapshotOpt {
+	return func(params *ops.CreateSnapshotParams) {
+		params.Body.RetainSourceVsock = Bool(retain)
+	}
+}
+
 // CreateSnapshot is a wrapper for the swagger generated client to make
 // calling of the API easier.
 func (f *Client) CreateSnapshot(ctx context.Context, snapshotParams *models.SnapshotCreateParams, opts ...CreateSnapshotOpt) (*ops.CreateSnapshotNoContent, error) {

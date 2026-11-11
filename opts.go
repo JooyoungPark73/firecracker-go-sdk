@@ -53,6 +53,15 @@ func WithProcessRunner(cmd *exec.Cmd) Opt {
 // to be passed to LoadSnapshot
 type WithSnapshotOpt func(*SnapshotConfig)
 
+// WithSnapshotVsockReset resets established guest vsock connections before the
+// restored VM resumes. Listening sockets survive and can accept reconnections.
+// Use this with snapshots created using WithRetainedSourceVsock(true).
+func WithSnapshotVsockReset(reset bool) WithSnapshotOpt {
+	return func(cfg *SnapshotConfig) {
+		cfg.ResetVsock = reset
+	}
+}
+
 // WithSnapshot will allow for the machine to start using a given snapshot.
 //
 // If using the UFFD memory backend, the memFilePath may be empty (it is
